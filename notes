@@ -1,0 +1,51 @@
+Expand C to support following class and operations:
+
+C Library:
+template<typename>
+class Image {
+	Image(unsigned int w, unsigned int h)
+	operator (int, int) and (Var, Var) to access value in coordinate
+  operator = (Image x = Image y)
+}
+
+UniformImage {
+  UniformImage(const Type &t, int dims);
+	operator (int, int) and (Var, Var) to access value in coordinate
+  operator =  (Image x = UniformImage y)
+}
+
+Var {
+  always unsigned int
+  upper and lower bound
+  incremental step
+}
+
+Compiler:
+Func {
+  Func can be defined in a functional language style
+  Func can be assigned a pointer to a C function
+  Func is called using realize, whose args suggests sizes on x n y dimension
+
+  Input of Func is always specified in algorithm description, if there is any
+  Output of Func is always an Image, which type is the same as input (inferred by compiler)
+
+  Try to put whatever describes the function into a loop
+
+  need to remember all Func, Var, C function, C variable to figure out meaning of a symbol and type of it
+}
+
+Halide Functions: 
+  Var max(Var, Var);
+  Var min(Var, Var);
+  Var clamp(Var, T, T);
+  Var select(bool, Expr,Expr);
+
+Expr vs Var
+  Var is always unsigned int and describes iterations through an image
+  Expr = UniformImage(Var)
+  Expr is more general, can contain any type.
+
+UniformImage vs Image
+  UniformImage is to be specified in runtime
+  It does not contain actual image data
+  It can be assigned to be any Image (UniformImage x = Image y);
