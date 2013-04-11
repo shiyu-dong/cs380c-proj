@@ -1,48 +1,44 @@
 #include "Halide.h"
 #include <assert.h>
+#include <iostream>
 
+#define RESULT_TYPE int
 using namespace Halide;
-
-void Func_f(Var Var0, Var Var1, Image<int>& out) {
-  // TODO: is this size calculation always correct?
-  // do we consider input image size?
-  out.s0 = Var0.upper - Var0.lower;
-  out.s1 = Var1.upper - Var1.lower;
-  // image data type informed by compiler
-  out.base = new int[out.s0*out.s1];
-
-  for(int x=Var1.lower; x<Var1.upper; x+=Var1.step) {
-    for(int y=Var1.lower; y<Var1.upper; y+=Var1.step) {
-      out.base[x*out.s0+y] = max(x, y);
-    }
-  }
-  return;
-}
 
 int main(int argc, char **argv) {
     Var x, y;
-    Func f, g, h;
+    Func f;
 
     printf("Defining function...\n");
 
-    // changed by compiler
+    //f.realize(32, 32) && f(x, y)
+    x.lower = 0;
+    x.upper = 32;
+    y.lower = 0;
+    y.upper = 32;
+
+    //Image<int> imf = f; or user specify result type
+    Image<RESULT_TYPE> f;
+    //f(x, y)
+    f.s0 = x.upper - x.lower;
+    f.s1 = 1;
+    f.base = new RESULT_TYPE[(x.upper-x.lower)*(y.upper-y.lower)];
+
     //f(x, y) = max(x, y);
-    f = (void*)Func_f;
+    for(int x_ite=x.lower; x_ite<x.upper; x_ite++) {
+      for(int y_ite=y.lower; y_ite<y.upper; y_ite++) {
+        f(x_ite, y_ite) = max(x_ite, y_ite);
+      }
+    }
+
+    //f(x, y) = max(x, y);
+    //Image<int> imf = f
+    Image<int> imf;
+    imf = f;
 
     printf("Realizing function...\n");
 
     // changed by compiler
-    //Image<int> imf = f.realize(32, 32);
-    x.lower = 0;
-    x.upper = 32;
-    x.step = 1;
-    y.lower = 0;
-    y.upper = 32;
-    y.step = 1;
-
-    Image<int> imf;
-
-    (*(void(*)(Var, Var, Image<int>&))f)(x, y, imf);
 
     for(int i=0; i<32; i++) {
       for(int j=0; j<32; j++) {
