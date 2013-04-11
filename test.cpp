@@ -20,8 +20,6 @@ int main(int argc, char **argv) {
     //Image<int> imf = f; or user specify result type
     Image<RESULT_TYPE> f;
     //f(x, y)
-    f.s0 = x.upper - x.lower;
-    f.s1 = 1;
     f.base = new RESULT_TYPE[(x.upper-x.lower)*(y.upper-y.lower)];
 
     //f(x, y) = max(x, y);
