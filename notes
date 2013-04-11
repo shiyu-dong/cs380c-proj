@@ -29,9 +29,18 @@ Func {
   Input of Func is always specified in algorithm description, if there is any
   Output of Func is always an Image, which type is the same as input (inferred by compiler)
 
+  Replace algorithm description of Func to cooresponding for loops:
+    Func f; // remember that f is Func
+    ...
+    f(x,y) = max(x, y); // translate directly into two level nested for loops
+
   Try to put whatever describes the function into a loop
 
   need to remember all Func, Var, C function, C variable to figure out meaning of a symbol and type of it
+}
+
+Expr {
+  simply remember and replace
 }
 
 Halide Functions: 

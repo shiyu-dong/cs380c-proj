@@ -9,7 +9,6 @@ namespace Halide {
   struct Var {
     unsigned int lower;
     unsigned int upper;
-    unsigned int step;
   };
 
   template<typename T>
@@ -20,11 +19,11 @@ namespace Halide {
 
       // operators
       void operator=(Image &other) {
-        base = other->base;
-        s0 = other->s0;
-        s1 = other->s1;
-        s2 = other->s2;
-        s3 = other->s3;
+        base = other.base;
+        s0 = other.s0;
+        s1 = other.s1;
+        s2 = other.s2;
+        s3 = other.s3;
       }
 
       T &operator()(int a) {
@@ -85,7 +84,7 @@ namespace Halide {
       return b;
     }
 
-  typedef Image Func;
+  //typedef Image Func;
 };
 
 #endif
