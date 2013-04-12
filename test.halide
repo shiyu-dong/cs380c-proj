@@ -1,0 +1,26 @@
+#include "Halide.h"
+#include <assert.h>
+#include <iostream>
+
+#define RESULT_TYPE int
+using namespace Halide;
+
+int main(int argc, char **argv) {
+    Var x, y;
+    Func f, g;
+
+
+    f(x, y) = max(x, y);
+    g(x, y) = min(x, y);
+
+    Image<int> imf = f.realize(32, 32);
+    Image<int> img = g.realize(32, 32);
+
+    for(int i=0; i<32; i++) {
+      for(int j=0; j<32; j++) {
+        assert(imf.base[i*32+j] == max(i, j));
+      }
+    }
+
+    return 0;
+}
