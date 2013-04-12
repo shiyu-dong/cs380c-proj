@@ -29,9 +29,33 @@ def generate_code():
         pline = line.rstrip('\n').lstrip(' ')
         sline = re.split(' |,|;', pline)
 
-        # generate code for "for" loop
         if ln in func_def_line:
             func_name = func_def_line[ln]
+
+            # f.base = new RESULT_TYPE[SIZE*SIZE]
+            sys.stdout.write(space + func_name + '.base = new RESULT_TYPE[')
+            count = 0;
+            for arg in func_list[func_name].var_list:
+                count += 1
+                if arg in local_var_list:
+                    sys.stdout.write(str(local_var_list[arg].upper))
+                if arg in global_var_list:
+                    sys.stdout.write(str(global_var_list[arg].upper))
+                if (count != len(func_list[func_name].var_list)):
+                    sys.stdout.write('*')
+            sys.stdout.write('];\n')
+
+            # f.s0 = SIZE
+            # TODO: assume 2D image
+            sys.stdout.write(space + func_name+'.s0 = ')
+            arg = func_list[func_name].var_list[0]
+            if arg in local_var_list:
+                sys.stdout.write(str(local_var_list[arg].upper))
+            if arg in global_var_list:
+                sys.stdout.write(str(global_var_list[arg].upper))
+            sys.stdout.write(';\n\n')
+
+            # generate code for "for" loop
             # for(arg=0; arg<upper; arg++)
             for arg in func_list[func_name].var_list:
                 sys.stdout.write(space+'for(unsigned int '+arg+'=0; ')
@@ -51,12 +75,19 @@ def generate_code():
                 sys.stdout.write(space + '}\n')
                 space = space[:len(space)-2] 
             space += '  '
+            sys.stdout.write('\n')
+
+        # delete lines that calls realize
+        elif re.match('.*\w\.realize\(', pline) != None:
+            index = line.rfind('.')
+            line = line[:index] + ';\n'
+            sys.stdout.write(line)
+
 
         # delete lines for Var declaraion
         elif not 'Var' in sline:
-            print line,
+            sys.stdout.write(line)
         ln += 1
-
 
 #-----------------  Main  -----------------#
 ## Parse Input
@@ -73,16 +104,21 @@ for line in sys.stdin:
         # if reach another function
         if depth == 0:
             generate_code()
-            for var in local_var_list:
-                print var, local_var_list[var].upper
+            #for var in local_var_list:
+            #    print var, local_var_list[var].upper
             local_var_list = {}
-            for func in func_list:
-                sys.stdout.write(func + ' = ' + func_list[func].exp + ' --> ')
-                for arg in func_list[func].var_list:
-                    sys.stdout.write(arg + ' ')
-                sys.stdout.write('\n')
+            #for func in func_list:
+            #    sys.stdout.write(func + ' = ' + func_list[func].exp + ' --> ')
+            #    for arg in func_list[func].var_list:
+            #        sys.stdout.write(arg + ' ')
+            #    sys.stdout.write('\n')
             func_list = {}
             func_def_line = {}
+
+    # add Func define
+    if '#define RESULT_TYPE' in line:
+        ifile.append('#define Func Image<RESULT_TYPE>\n')
+        
 
     # Vars declaration
     if 'Var' in sline:
@@ -135,8 +171,9 @@ for line in sys.stdin:
         i = 0
         for num in dimensions:
             var_name = func_list[func_name].var_list[i]
+            # TODO: check if num is larger than upper..?
             if var_name in local_var_list:
-                local_var_list[var_name].upper += int(num)
+                local_var_list[var_name].upper = int(num)
             elif var_name in global_var_list:
-                global_var_list[var_name].upper += int(num)
+                global_var_list[var_name].upper = int(num)
             i+=1
