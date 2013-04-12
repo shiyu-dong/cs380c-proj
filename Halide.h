@@ -14,48 +14,21 @@ namespace Halide {
   template<typename T>
     class Image {
     public:
-      unsigned int s0, s1, s2, s3;
+      unsigned int s0;
       T* base;
 
       // operators
       void operator=(Image &other) {
         base = other.base;
         s0 = other.s0;
-        s1 = other.s1;
-        s2 = other.s2;
-        s3 = other.s3;
-      }
-
-      T &operator()(int a) {
-        return base[a*s0];
       }
 
       T &operator()(int a, int b) {
-        return base[a*s0 + b*s1];
-      }
-
-      T &operator()(int a, int b, int c) {
-        return base[a*s0 + b*s1 + c*s2];
-      }
-
-      T &operator()(int a, int b, int c, int d) {
-        return base[a*s0 + b*s1 + c*s2 + d*s3];
-      }
-
-      T operator()(int a) const {
-        return base[a*s0];
+        return base[a*s0 + b];
       }
 
       T operator()(int a, int b) const {
-        return base[a*s0 + b*s1];
-      }
-
-      T operator()(int a, int b, int c) const {
-        return base[a*s0 + b*s1 + c*s2];
-      }
-
-      T operator()(int a, int b, int c, int d) const {
-        return base[a*s0 + b*s1 + c*s2 + d*s3];
+        return base[a*s0 + b];
       }
     };
 
@@ -83,8 +56,6 @@ namespace Halide {
       if (c) return a;
       return b;
     }
-
-  //typedef Image Func;
 };
 
 #endif
