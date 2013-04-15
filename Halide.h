@@ -17,6 +17,13 @@ namespace Halide {
       unsigned int s0;
       T* base;
 
+      // constructor
+      Image() {}
+
+      Image(unsigned int x, unsigned int y) : s0(x) {
+        base = new T[x*y];
+      }
+
       // operators
       void operator=(Image &other) {
         base = other.base;
@@ -31,6 +38,13 @@ namespace Halide {
         return base[a*s0 + b];
       }
     };
+
+  class RDom {
+    public:
+      unsigned int x, y, z;
+      RDom(unsigned int _x, unsigned int _y) :
+        x(_x), y(_y) {}
+  };
 
   template <typename T>
     T inline max(T a, T b) {

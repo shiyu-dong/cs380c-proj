@@ -60,7 +60,13 @@ UniformImage vs Image
   It can be assigned to be any Image (UniformImage x = Image y);
 
 TODO:
-  support RDom, let user specify size statically
   support 1D and 3D image
   support Bound inference
+
+Syntax change:
+  Func declaration needs to specify what Vars are used
+  User statically specify result type
+  Use (int) instead of cast<int>
+  No name of any variable Func f("f") -> Func f(x, y); Var x("x") -> Var x
+  Change all Uniform data structure into regular ones
 
