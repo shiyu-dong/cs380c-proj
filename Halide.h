@@ -15,35 +15,65 @@ namespace Halide {
     class Image {
     public:
       unsigned int s0;
+      unsigned int s1;
       T* base;
 
       // constructor
-      Image() {}
+      Image() {
+        s0 = 1;
+        s1 = 1;
+      }
 
-      Image(unsigned int x, unsigned int y) : s0(x) {
+      Image(unsigned int x) : s0(x), s1(1) {
+        base = new T[x];
+      }
+
+      Image(unsigned int x, unsigned int y) : s0(x), s1(y) {
         base = new T[x*y];
+      }
+
+      Image(unsigned int x, unsigned int y, unsigned int z) : s0(x), s1(y) {
+        base = new T[x*y*z];
       }
 
       // operators
       void operator=(Image &other) {
         base = other.base;
         s0 = other.s0;
+        s1 = other.s1;
       }
 
-      T &operator()(int a, int b) {
+      T operator()(unsigned int a) const {
+        return base[a];
+      }
+      T &operator()(unsigned int a) {
+        return base[a];
+      }
+
+      T operator()(unsigned int a, unsigned int b) const {
+        return base[a*s0 + b];
+      }
+      T &operator()(unsigned int a, unsigned int b) {
         return base[a*s0 + b];
       }
 
-      T operator()(int a, int b) const {
-        return base[a*s0 + b];
+      T operator()(unsigned int a, unsigned int b, unsigned int c) const {
+        return base[a*s0 + b*s1 + c];
+      }
+      T &operator()(unsigned int a, unsigned int b, unsigned int c) {
+        return base[a*s0 + b*s1 + c];
       }
     };
 
   class RDom {
     public:
       unsigned int x, y, z;
+      RDom(unsigned int _x) :
+        x(_x) {}
       RDom(unsigned int _x, unsigned int _y) :
         x(_x), y(_y) {}
+      RDom(unsigned int _x, unsigned int _y, unsigned int _z) :
+        x(_x), y(_y), z(_z) {}
   };
 
   template <typename T>

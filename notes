@@ -66,7 +66,7 @@ TODO:
 Syntax change:
   Func declaration needs to specify what Vars are used
   User statically specify result type
-  Use (int) instead of cast<int>
+  Use static_cast<int> or (int) instead of cast<int>
   No name of any variable Func f("f") -> Func f(x, y); Var x("x") -> Var x
   Change all Uniform data structure into regular ones
 

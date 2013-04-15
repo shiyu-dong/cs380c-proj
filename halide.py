@@ -73,9 +73,12 @@ def generate_code():
                 if (count != len(func_list[func_name].var_list)):
                     sys.stdout.write('*')
             sys.stdout.write('];\n')
+            # FIXME: may allocate more memory than needed:
+            # Var x; RDom r(10);
+            # Func(x, r);
+            # f(x) = in(x)*r(r.x)
 
             # f.s0 = SIZE
-            # TODO: assume 2D image
             sys.stdout.write(space + func_name+'.s0 = ')
             arg = func_list[func_name].var_list[0]
             if arg in local_var_list:
@@ -87,6 +90,28 @@ def generate_code():
             elif arg in global_rdom_list:
                 sys.stdout.write(global_rdom_list[arg].dimensions[0])
             sys.stdout.write(';\n')
+
+            # f.s1 = SIZE
+            if (arg in local_rdom_list and len(local_rdom_list[arg].dimensions) > 1):
+                sys.stdout.write(space + func_name+'.s1 = ')
+                sys.stdout.write(local_rdom_list[arg].dimensions[1])
+                sys.stdout.write(';\n')
+            elif (arg in global_rdom_list and len(global_rdom_list[arg].dimensions) > 1):
+                sys.stdout.write(space + func_name+'.s1 = ')
+                sys.stdout.write(global_rdom_list[arg].dimensions[1])
+                sys.stdout.write(';\n')
+            elif len(func_list[func_name].var_list > 1):
+                sys.stdout.write(space + func_name+'.s1 = ')
+                arg = func_list[func_name].var_list[1]
+                if arg in local_var_list:
+                    sys.stdout.write(local_var_list[arg].upper)
+                elif arg in global_var_list:
+                    sys.stdout.write(global_var_list[arg].upper)
+                elif arg in local_rdom_list:
+                    sys.stdout.write(local_rdom_list[arg].dimensions[0])
+                elif arg in global_rdom_list:
+                    sys.stdout.write(global_rdom_list[arg].dimensions[0])
+                sys.stdout.write(';\n')
 
             # generate code for "for" loop
             ch = ord('x')
