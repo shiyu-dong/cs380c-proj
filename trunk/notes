@@ -58,3 +58,9 @@ UniformImage vs Image
   UniformImage is to be specified in runtime
   It does not contain actual image data
   It can be assigned to be any Image (UniformImage x = Image y);
+
+TODO:
+  support RDom, let user specify size statically
+  support 1D and 3D image
+  support Bound inference
+
