@@ -58,10 +58,10 @@ namespace Halide {
       }
 
       T operator()(unsigned int a, unsigned int b, unsigned int c) const {
-        return base[a*s0 + b*s1 + c];
+        return base[a*s0*s1 + b*s1 + c];
       }
       T &operator()(unsigned int a, unsigned int b, unsigned int c) {
-        return base[a*s0 + b*s1 + c];
+        return base[a*s0*s1 + b*s1 + c];
       }
     };
 
