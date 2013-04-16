@@ -9,7 +9,7 @@ int main(int argc, char **argv) {
     Func f(x);
 
     //UniformImage a(Int(32), 1);
-    Image<int> a(int(32), 1);
+    Image<int> a(1);
     Image<int> b(1), c(1);
     a = c;
 
