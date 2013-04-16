@@ -100,7 +100,7 @@ def generate_code():
                 sys.stdout.write(space + func_name+'.s1 = ')
                 sys.stdout.write(global_rdom_list[arg].dimensions[1])
                 sys.stdout.write(';\n')
-            elif len(func_list[func_name].var_list > 1):
+            elif len(func_list[func_name].var_list) > 1:
                 sys.stdout.write(space + func_name+'.s1 = ')
                 arg = func_list[func_name].var_list[1]
                 if arg in local_var_list:
