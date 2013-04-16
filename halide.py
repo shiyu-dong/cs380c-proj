@@ -18,8 +18,8 @@ ifile = []
 
 class Var:
     def __init__(self):
-        self.lower = ''
-        self.upper = ''
+        self.lower = '0'
+        self.upper = '0'
 
 class Func:
     def __init__(self):
