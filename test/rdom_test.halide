@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
 
     Func hist(r), f(x, y);
 
-    RDom r(W, H), k(10, 5);
+    RDom r(0, W, 0, H), k(10, 5);
     hist(clamp((int)(in(r.x, r.y)), 0, 255)) = hist(clamp((int)(in(r.x, r.y)), 0, 255))+1;
 
     Image<int32_t> h = hist.realize(W*2);

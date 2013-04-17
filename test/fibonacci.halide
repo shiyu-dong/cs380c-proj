@@ -5,14 +5,14 @@ using namespace Halide;
 
 int main(int argc, char **argv) {
 
-    Func fib(x), g(x);
+    Func fib(x, r), g(x);
     Var x;
-    RDom r(2, 18);
+    RDom r(2, 20);
 
     fib(x) = 1; 
     fib(r.x) = fib(r.x-2) + fib(r.x-1);
 
-    g(x) = fib(x+10);
+    g(x) = fib(x);
 
     Image<int> out = g.realize(20);
 
@@ -20,11 +20,9 @@ int main(int argc, char **argv) {
     fib_ref[0] = fib_ref[1] = 1;
     for (int i = 2; i < 20; i++) {
         fib_ref[i] = fib_ref[i-1] + fib_ref[i-2];
-        if (i >= 10) {
-            if (fib_ref[i] != out(i-10)) {
-                printf("out(%d) = %d instead of %d\n", i-10, out(i-10), fib_ref[i]);
-                return -1;
-            }
+        if (fib_ref[i] != out(i)) {
+          printf("out(%d) = %d instead of %d\n", i, out(i), fib_ref[i]);
+          return -1;
         }
     }    
 
