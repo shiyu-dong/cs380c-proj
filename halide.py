@@ -281,6 +281,7 @@ for line in sys.stdin:
                 func_list[parameters[0]].exp = exp
                 func_def_line[len(ifile)-1] = parameters[0]
             else:
+                rfunc_list[parameters[0]] = Func()
                 rfunc_list[parameters[0]].exp = exp
                 rfunc_def_line[len(ifile)-1] = parameters[0]
 
