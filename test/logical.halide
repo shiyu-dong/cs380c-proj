@@ -3,10 +3,6 @@
 #define RESULT_TYPE uint8_t
 using namespace Halide;
 
-Expr u8(Expr a) {
-    return static_cast<uint8_t>(a);
-}
-
 int main(int argc, char **argv) {
 
     Image<uint8_t> input(64, 64);
@@ -19,9 +15,7 @@ int main(int argc, char **argv) {
 
     Func f(x, y);
     Var x, y;
-    f(x, y) = select(((input(x, y) > 10) && (input(x, y) < 20)) ||
-                     ((input(x, y) > 40) && (!(input(x, y) > 50))), 
-                     u8(255), u8(0));
+    f(x, y) = select(((input(x, y) > 10) && (input(x, y) < 20)) || ((input(x, y) > 40) && (!(input(x, y) > 50))), 255, 0);
 
     Image<uint8_t> output = f.realize(64, 64);
 
