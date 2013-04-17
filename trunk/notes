@@ -73,3 +73,22 @@ Syntax change:
   loop boundary inference
   each function can be realized only once
 
+TO TEST:
+  51 bounds: has two realize
+  51 input_image_bounds_check: has set_error_handler
+  52 histogram: has f.update
+  56 reduction: has f.sum, f.product, f.minimum, f.maximum, etc.
+  58 parallel_performance: has two realize
+  65 convolution: has f.tile, f.update
+  66 histogram_equalize: has in, don't know where it comes from
+  69 rehydrate: has f.uniforms, f.uniformImages
+->106 vector_cast: can compile, result is wrong
+  113 vectorize: has two realize
+  138 game of life: has select, don't know where it comes from, and many complicated Expr
+->350 vector_math: has two realize in f10, but it's a good test, maybe can be modified
+  1393 simd_op_check: too long...
+
+Comments:
+  The first number is # of lines
+  Maybe we need to have support for more than one realize for one function...
+  I added the cases marked with -> to svn, probably 69 can also be modified, not sure
