@@ -24,6 +24,7 @@ class Var:
 class Func:
     def __init__(self):
         self.var_list = []
+        self.var_offset = []
         self.rvar_list = [] # regular variables used in reduction step
         self.exp = ''
 
@@ -147,18 +148,30 @@ def generate_code():
 
             # generate code for "for" loop
             ch = ord('x')
+            i = 0
             # for(arg=0; arg<upper; arg++)
             for arg in func_list[func_name].var_list:
                 if arg in local_var_list or arg in global_var_list:
                     sys.stdout.write(space+'for(unsigned int '+arg)
-                    if arg in local_var_list:
-                        sys.stdout.write('='+local_var_list[arg].lower+'; ')
-                        sys.stdout.write(arg+'<'+local_var_list[arg].upper+'; ')
-                    elif arg in global_var_list:
-                        sys.stdout.write('='+glbcal_var_list[arg].lower+'; ')
-                        sys.stdout.write(arg+'<'+global_var_list[arg].upper+'; ')
+                    if func_list[func_name].var_offset[i] == '':
+                        if arg in local_var_list:
+                            sys.stdout.write('='+local_var_list[arg].lower+'; ')
+                            sys.stdout.write(arg+'<'+local_var_list[arg].upper+'; ')
+                        elif arg in global_var_list:
+                            sys.stdout.write('='+glbcal_var_list[arg].lower+'; ')
+                            sys.stdout.write(arg+'<'+global_var_list[arg].upper+'; ')
+                    else:
+                        if arg in local_var_list:
+                            sys.stdout.write('='+func_list[func_name].var_offset[i]+'; ')
+                            sys.stdout.write(arg+'<'+local_var_list[arg].upper)
+                            sys.stdout.write('-('+func_list[func_name].var_offset[i]+'); ')
+                        elif arg in global_var_list:
+                            sys.stdout.write('='+func_list[func_name].var_offset[i]+'; ')
+                            sys.stdout.write(arg+'<'+global_var_list[arg].upper)
+                            sys.stdout.write('-('+func_list[func_name].var_offset[i]+'); ')
                     sys.stdout.write(arg+'++) {\n')
                     space += '  '
+                i += 1
 
             # print inner most expression
             sys.stdout.write(space + ifile[ln].lstrip(' ')),
@@ -289,7 +302,13 @@ for line in sys.stdin:
             index = 1
             while index != len(sfunc):
                 if sfunc[index] != '':
-                    func_list[func_name].var_list.append(sfunc[index])
+                    j = sfunc[index].find('[')
+                    if j == -1:
+                        func_list[func_name].var_list.append(sfunc[index])
+                        func_list[func_name].var_offset.append('')
+                    else:
+                        func_list[func_name].var_list.append(sfunc[index][:j])
+                        func_list[func_name].var_offset.append(sfunc[index][j+1:sfunc[index].find(']')])
                 index += 1
             # TODO: boundary inference from exp
 
