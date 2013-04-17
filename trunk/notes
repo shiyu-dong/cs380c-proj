@@ -69,4 +69,6 @@ Syntax change:
   Use static_cast<int> or (int) instead of cast<int>
   No name of any variable Func f("f") -> Func f(x, y); Var x("x") -> Var x
   Change all Uniform data structure into regular ones
+  f(x,y)++
+  loop boundary inference
 
