@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
             f.realize(1);
         }
         gettimeofday(&t2, NULL);
-        printf("%d\n", (t2.tv_sec - t1.tv_sec)*1000000 + (t2.tv_usec - t1.tv_usec));
+        //printf("%d\n", (t2.tv_sec - t1.tv_sec)*1000000 + (t2.tv_usec - t1.tv_usec));
     }    
 
     printf("Success!\n");
