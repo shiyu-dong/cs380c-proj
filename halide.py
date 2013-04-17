@@ -263,6 +263,7 @@ for line in sys.stdin:
             func_def_line = {}
             rfunc_list = {}
             rfunc_def_line = {}
+            ifile = []
 
     # add Func define
     if '#define RESULT_TYPE' in line:
