@@ -70,7 +70,8 @@ Syntax change:
   No name of any variable Func f("f") -> Func f(x, y); Var x("x") -> Var x
   Change all Uniform data structure into regular ones
   f(x,y)++
-  loop boundary inference
+  loop boundary inference: Func f(x[1], y[k+2]). Use [..] to specify variable offsets
+    reduction function does not have offsets. Boundary in those functions enforced by RDom
   each function can be realized only once
 
 TO TEST:
