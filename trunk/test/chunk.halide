@@ -1,5 +1,5 @@
 #include "Halide.h"
-#define RESULT_TYPE int
+#define RESULT_TYPE float
 
 using namespace Halide;
 
@@ -7,7 +7,7 @@ int main(int argc, char **argv) {
     Var x, y;
     Var xo, xi, yo, yi;
     
-    Func f(x,y), g();
+    Func f(x,y), g(x,y);
 
     printf("Defining function...\n");
 
