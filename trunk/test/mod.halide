@@ -1,6 +1,6 @@
 #include "Halide.h"
 
-#define RESULT_TYPE int
+#define RESULT_TYPE T
 using namespace Halide;
 
 template<typename T>
@@ -22,8 +22,7 @@ bool test() {
 
 int main(int argc, char **argv) {
 
-    if (test<float>() &&
-        test<double>() &&
+    if (
         test<int32_t>() &&
         test<uint32_t>() &&
         test<int16_t>() &&
