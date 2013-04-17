@@ -100,23 +100,7 @@ def generate_code():
                     sys.stdout.write(local_var_list[arg].upper)
                 elif arg in global_var_list:
                     sys.stdout.write(global_var_list[arg].upper)
-                elif arg in local_rdom_list:
-                    i = 0
-                    while i != len(local_rdom_list[arg].dimensions):
-                        sys.stdout.write('(' + local_rdom_list[arg].dimensions[i].upper )
-                        sys.stdout.write('-' + local_rdom_list[arg].dimensions[i].lower + ')' )
-                        if i+1 != len(local_rdom_list[arg].dimensions):
-                            sys.stdout.write('*')
-                        i += 1
-                elif arg in global_rdom_list:
-                    i = 0
-                    while i != len(global_rdom_list[arg].dimensions):
-                        sys.stdout.write(global_rdom_list[arg].dimensions[i])
-                        if i+1 != len(global_rdom_list[arg].dimensions):
-                            sys.stdout.write('*')
-                        i += 1
-
-                if (count != len(func_list[func_name].var_list)):
+                if count != len(func_list[func_name].var_list) and not func_list[func_name].var_list[count] in local_rdom_list and not func_list[func_name].var_list[count] in global_rdom_list:
                     sys.stdout.write('*')
             sys.stdout.write('];\n')
             # FIXME: may allocate more memory than needed:
@@ -131,39 +115,19 @@ def generate_code():
                 sys.stdout.write(local_var_list[arg].upper)
             elif arg in global_var_list:
                 sys.stdout.write(global_var_list[arg].upper)
-            elif arg in local_rdom_list:
-                sys.stdout.write(local_rdom_list[arg].dimensions[0].upper + '-')
-                sys.stdout.write(local_rdom_list[arg].dimensions[0].lower)
-            elif arg in global_rdom_list:
-                sys.stdout.write(global_rdom_list[arg].dimensions[0].upper + '-')
-                sys.stdout.write(global_rdom_list[arg].dimensions[0].lower)
             sys.stdout.write(';\n')
 
             # f.s1 = SIZE
-            if (arg in local_rdom_list and len(local_rdom_list[arg].dimensions) > 1):
-                sys.stdout.write(space + func_name+'.s1 = ')
-                sys.stdout.write(local_rdom_list[arg].dimensions[1].upper + '-')
-                sys.stdout.write(local_rdom_list[arg].dimensions[1].lower)
-                sys.stdout.write(';\n')
-            elif (arg in global_rdom_list and len(global_rdom_list[arg].dimensions) > 1):
-                sys.stdout.write(space + func_name+'.s1 = ')
-                sys.stdout.write(global_rdom_list[arg].dimensions[1].upper + '-')
-                sys.stdout.write(global_rdom_list[arg].dimensions[1].lower)
-                sys.stdout.write(';\n')
-            elif len(func_list[func_name].var_list) > 1:
-                sys.stdout.write(space + func_name+'.s1 = ')
+            if len(func_list[func_name].var_list) > 1:
                 arg = func_list[func_name].var_list[1]
                 if arg in local_var_list:
+                    sys.stdout.write(space + func_name+'.s1 = ')
                     sys.stdout.write(local_var_list[arg].upper)
+                    sys.stdout.write(';\n')
                 elif arg in global_var_list:
+                    sys.stdout.write(space + func_name+'.s1 = ')
                     sys.stdout.write(global_var_list[arg].upper)
-                elif arg in local_rdom_list:
-                    sys.stdout.write(local_rdom_list[arg].dimensions[0].upper + '-')
-                    sys.stdout.write(local_rdom_list[arg].dimensions[0].lower)
-                elif arg in global_rdom_list:
-                    sys.stdout.write(global_rdom_list[arg].dimensions[0].upper + '-')
-                    sys.stdout.write(global_rdom_list[arg].dimensions[0].lower)
-                sys.stdout.write(';\n')
+                    sys.stdout.write(';\n')
 
             # generate code for "for" loop
             ch = ord('x')
@@ -180,39 +144,13 @@ def generate_code():
                     sys.stdout.write(arg+'++) {\n')
                     space += '  '
 
-                elif arg in local_rdom_list or arg in global_rdom_list:
-                    this_list = {}
-                    if arg in local_rdom_list:
-                        this_list = local_rdom_list
-                    else:
-                        this_list = global_rdom_list
-
-                    for dim in this_list[arg].dimensions:
-                        sys.stdout.write(space+'for('+arg+'.'+chr(ch))
-                        sys.stdout.write('=' + dim.lower + '; ')
-                        sys.stdout.write(arg+'.'+chr(ch)+'<'+dim.upper+'; ')
-                        sys.stdout.write(arg+'.'+chr(ch)+'++) {\n')
-                        space += '  '
-                        ch += 1
-
             # print inner most expression
             sys.stdout.write(space + ifile[ln].lstrip(' ')),
 
             # print back brackets
             space = space[:len(space)-2] 
             for arg in func_list[func_name].var_list:
-                if arg in local_rdom_list or arg in global_rdom_list:
-                    i=0
-                    this_list = {}
-                    if arg in local_rdom_list:
-                        this_list = local_rdom_list
-                    else:
-                        this_list = global_rdom_list
-                    while i < len(this_list[arg].dimensions):
-                        sys.stdout.write(space + '}\n')
-                        space = space[:len(space)-2] 
-                        i += 1
-                else:
+                if arg in local_var_list or arg in global_var_list:
                     sys.stdout.write(space + '}\n')
                     space = space[:len(space)-2] 
             space += '  '
