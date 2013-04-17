@@ -90,6 +90,12 @@ namespace Halide {
       if (a >= c) return c;
       return a;
     }
+  template <typename T>
+    T inline clamp(T a, unsigned int b, unsigned int c) {
+      if (a <= b) return b;
+      if (a >= c) return c;
+      return a;
+    }
 
   template <typename T>
     T inline select(unsigned int c, T a, T b) {

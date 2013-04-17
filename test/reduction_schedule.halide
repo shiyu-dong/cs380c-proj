@@ -26,15 +26,15 @@ int main(int argc, char **argv) {
     
     energy(x, y)  = clamped(x, y);
     //TODO: loop for x needed
-    energy(x, ry) = clamped(x, ry) + min(min(energy(clamp(x-1, 0, size-1), ry-1), energy(x, ry-1)), energy(clamp(x+1, 0, size-1), ry-1));
+    energy(x, ry.x) = clamped(x, ry.x) + min(min(energy(clamp(x-1, 0, size-1), ry.x-1), energy(x, ry.x-1)), energy(clamp(x+1, 0, size-1), ry.x-1));
 
     Image<double> im_energy = energy.realize(size,size);
     Image<double> ref_energy(noise);
     for (int y = 1; y < size; y++) {
         for (int x = 0; x < size; x++) {
-            int xm = std::max(x-1, 0);
-            int xp = std::min(x+1, size-1);
-            double incr = std::min(ref_energy(xm, y-1), std::min(ref_energy(x, y-1), ref_energy(xp, y-1)));
+            int xm = max(x-1, 0);
+            int xp = min(x+1, size-1);
+            double incr = min(ref_energy(xm, y-1), min(ref_energy(x, y-1), ref_energy(xp, y-1)));
             ref_energy(x, y) += incr;
             if (ref_energy(x,y) != im_energy(x,y)) {
                 printf("energy(%d,%d) was %f instead of %f\n", x, y, im_energy(x,y), ref_energy(x,y));

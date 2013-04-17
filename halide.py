@@ -24,6 +24,7 @@ class Var:
 class Func:
     def __init__(self):
         self.var_list = []
+        self.rvar_list = [] # regular variables used in reduction step
         self.exp = ''
 
 class RFunc:
@@ -48,8 +49,23 @@ def generate_code():
             func_name = rfunc_def_line[ln]
 
             # generate code for "for" loop
-            ch = ord('x')
             # for(arg=0; arg<upper; arg++)
+
+            # generate outer loops if there is any regular variabels
+            for arg in rfunc_list[func_name].rvar_list:
+                if arg in local_var_list or arg in global_var_list:
+                    sys.stdout.write(space+'for(unsigned int '+arg)
+                    if arg in local_var_list:
+                        sys.stdout.write('='+local_var_list[arg].lower+'; ')
+                        sys.stdout.write(arg+'<'+local_var_list[arg].upper+'; ')
+                    elif arg in global_var_list:
+                        sys.stdout.write('='+glbcal_var_list[arg].lower+'; ')
+                        sys.stdout.write(arg+'<'+global_var_list[arg].upper+'; ')
+                    sys.stdout.write(arg+'++) {\n')
+                    space += '  '
+
+            # generate reduction loop
+            ch = ord('x')
             for arg in func_list[func_name].var_list:
                 this_list = {}
                 if arg in local_rdom_list:
@@ -84,6 +100,10 @@ def generate_code():
                         sys.stdout.write(space + '}\n')
                         space = space[:len(space)-2] 
                         i += 1
+            for arg in rfunc_list[func_name].rvar_list:
+                sys.stdout.write(space + '}\n')
+                space = space[:len(space)-2] 
+
             space += '  '
             sys.stdout.write('\n')
 
@@ -103,10 +123,6 @@ def generate_code():
                 if count != len(func_list[func_name].var_list) and not func_list[func_name].var_list[count] in local_rdom_list and not func_list[func_name].var_list[count] in global_rdom_list:
                     sys.stdout.write('*')
             sys.stdout.write('];\n')
-            # FIXME: may allocate more memory than needed:
-            # Var x; RDom r(10);
-            # Func(x, r);
-            # f(x) = in(x)*r(r.x)
 
             # f.s0 = SIZE
             sys.stdout.write(space + func_name+'.s0 = ')
@@ -289,6 +305,11 @@ for line in sys.stdin:
                 rfunc_list[parameters[0]] = Func()
                 rfunc_list[parameters[0]].exp = exp
                 rfunc_def_line[len(ifile)-1] = parameters[0]
+                i = 1
+                while i != len(parameters):
+                    if parameters[i] in local_var_list or parameters[i] in global_var_list:
+                        rfunc_list[parameters[0]].rvar_list.append(parameters[i])
+                    i += 1
 
     # Function invocation
     if re.match('.*\w+\.realize\(', pline) != None:
