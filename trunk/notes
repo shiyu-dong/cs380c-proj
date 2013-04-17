@@ -71,4 +71,5 @@ Syntax change:
   Change all Uniform data structure into regular ones
   f(x,y)++
   loop boundary inference
+  each function can be realized only once
 
