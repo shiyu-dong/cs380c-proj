@@ -67,9 +67,9 @@ namespace Halide {
 
   class RDom {
     public:
-      unsigned int x, y, z;
-      RDom(unsigned int a, unsigned int b) {}
-      RDom(unsigned int a, unsigned int b, unsigned int c, unsigned int d) {}
+      int x, y, z;
+      RDom(int a, int b) {}
+      RDom(int a, int b, int c, int d) {}
   };
 
   template <typename T>
