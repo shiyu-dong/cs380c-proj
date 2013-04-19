@@ -1,7 +1,7 @@
 #include "Halide.h"
 #include "math.h"
 #include <dlfcn.h>
-#define RESULT_TYPE int
+#define RESULT_TYPE float
 
 using namespace Halide;
 
@@ -21,11 +21,10 @@ extern "C" int argmin(int x, float y) {
     }
     return minIndex;
 }
-HalideExtern_2(int, argmin, int, float);
 
 int main(int argc, char **argv) {
     Var x, y;
-    Func f(x), g(x), h(x);
+    Func f(x), g(x,r), h(x);
 
     printf("Defining function...\n");
 
@@ -34,15 +33,15 @@ int main(int argc, char **argv) {
     // Compute argmin of f over [-100..100]
     RDom r(-100, 100);
     g(x) = 0;
-    g(x) = argmin(r, f(r));
+    g(x) = argmin(r.x, f(r.x));
 
-    Image<int> result = g.realize(1);
-    int idx = result(0);
+    Image<float> result = g.realize(1);
+    float idx = result(0);
     printf("sin(%d/10.0f+17) = %f\n", idx, sinf(idx/10.0f+17));
 
     printf("Realizing function...\n");
 
-    Image<float> imf = f.realize(32, 32);
+    Image<float> imf = f.realize(32);
 
     printf("Success!\n");
     return 0;

@@ -41,6 +41,14 @@ def generate_code():
     ln = 0
     space = '    '
 
+    # Loop Coalescing
+    #for func1 in func_list:
+    #    for func2 in func_list:
+    #        if func1 == func2:
+    #            continue
+
+
+    # Code Generation
     for line in ifile:
         pline = line.rstrip('\n').lstrip(' ')
         sline = re.split(' |,|;', pline)
@@ -290,6 +298,7 @@ for line in sys.stdin:
                 local_rdom_list[rdom_name] = new_rdom
 
     # Func declaration
+    # Collect information about variables used and their offsets
     if 'Func' in sline and depth >= 1:
         index = pline.replace(' ','').index('Func')+4
         funcs = re.split('(\w+\(.*?\)[,;])', pline.replace(' ','')[index:])
@@ -310,9 +319,9 @@ for line in sys.stdin:
                         func_list[func_name].var_list.append(sfunc[index][:j])
                         func_list[func_name].var_offset.append(sfunc[index][j+1:sfunc[index].find(']')])
                 index += 1
-            # TODO: boundary inference from exp
 
     # Func definition
+    # Collect information about the expression of the function by remembering the line number of the expression
     if re.match('\w+\(.*\)\s*=', pline) != None:
         [func_call, exp] = re.split('=', pline.replace(' ', ''))
         parameters = re.split('\(|,|\)', func_call)
@@ -331,6 +340,7 @@ for line in sys.stdin:
                     i += 1
 
     # Function invocation
+    # Collect information about dimensions of iteration in each function
     if re.match('.*\w+\.realize\(', pline) != None:
         func_name = re.findall('\w+\.realize', pline.replace(' ', ''))
         func_name = func_name[0][:func_name[0].index('.')]
