@@ -10,7 +10,7 @@ int main(int argc, char **argv) {
     int H=32;
 
     Var x, y;
-    Func f(x[-1],y), g(x,y);
+    Func f(x,y), g(x,y);
 
     f(x, y) = max(x, y);
     g(x, y) = min(x, y);
