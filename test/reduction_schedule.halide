@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
     // dimensions during the reduction update
     Func clamped(x,y);
     Func energy(x,y,ry);
-    RDom ry(1, 31);
+    RDom ry(1, 32);
 
     clamped(x, y) = noise(clamp((int)x, 0, size-1), clamp((int)y, 0, size-1));
     
