@@ -60,8 +60,7 @@ UniformImage vs Image
   It can be assigned to be any Image (UniformImage x = Image y);
 
 TODO:
-  support 1D and 3D image
-  support Bound inference
+  Need a way to specify loops that can't be merged
 
 Syntax change:
   Func declaration needs to specify what Vars are used
@@ -69,7 +68,7 @@ Syntax change:
   Use static_cast<int> or (int) instead of cast<int>
   No name of any variable Func f("f") -> Func f(x, y); Var x("x") -> Var x
   Change all Uniform data structure into regular ones
-  f(x,y)++
+  f(x,y)++ must be changed into f(x,y) = f(x,y)+1
   loop boundary inference: Func f(x[1], y[k+2]). Use [..] to specify variable offsets
     reduction function does not have offsets. Boundary in those functions enforced by RDom
   each function can be realized only once

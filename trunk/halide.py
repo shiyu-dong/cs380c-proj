@@ -95,21 +95,9 @@ def generate_code():
             # generate code for "for" loop
             # for(arg=0; arg<upper; arg++)
 
-            # generate outer loops if there is any regular variabels
-            for arg in rfunc_list[func_name].rvar_list:
-                if arg in local_var_list or arg in global_var_list:
-                    sys.stdout.write(space+'for(int '+arg)
-                    if arg in local_var_list:
-                        sys.stdout.write('='+local_var_list[arg].lower+'; ')
-                        sys.stdout.write(arg+'<'+local_var_list[arg].upper+'; ')
-                    elif arg in global_var_list:
-                        sys.stdout.write('='+glbcal_var_list[arg].lower+'; ')
-                        sys.stdout.write(arg+'<'+global_var_list[arg].upper+'; ')
-                    sys.stdout.write(arg+'++) {\n')
-                    space += '  '
-
             # generate reduction loop
             ch = ord('x')
+            # generate outer loops if there is any rdom variabels
             for arg in func_list[func_name].var_list:
                 this_list = {}
                 if arg in local_rdom_list:
@@ -126,6 +114,19 @@ def generate_code():
                     sys.stdout.write(arg+'.'+chr(ch)+'++) {\n')
                     space += '  '
                     ch += 1
+
+            # generate inner loops if there is any regular variabels
+            for arg in rfunc_list[func_name].rvar_list:
+                if arg in local_var_list or arg in global_var_list:
+                    sys.stdout.write(space+'for(int '+arg)
+                    if arg in local_var_list:
+                        sys.stdout.write('='+local_var_list[arg].lower+'; ')
+                        sys.stdout.write(arg+'<'+local_var_list[arg].upper+'; ')
+                    elif arg in global_var_list:
+                        sys.stdout.write('='+glbcal_var_list[arg].lower+'; ')
+                        sys.stdout.write(arg+'<'+global_var_list[arg].upper+'; ')
+                    sys.stdout.write(arg+'++) {\n')
+                    space += '  '
 
             # print inner most expression
             sys.stdout.write(space + ifile[ln].lstrip(' ')),
@@ -362,7 +363,7 @@ for line in sys.stdin:
     # Func definition
     # Collect information about the expression of the function by remembering the line number of the expression
     if re.match('\w+\(.*\)\s*=', pline) != None:
-        [func_call, exp] = re.split('=', pline.replace(' ', ''))
+        [func_call, exp] = re.split('=', pline.replace(' ', ''), 1)
         parameters = re.split('\(|,|\)', func_call)
         if parameters[0] in func_list:
             if func_list[parameters[0]].exp == '':
@@ -374,6 +375,7 @@ for line in sys.stdin:
                 rfunc_def_line[len(ifile)-1] = parameters[0]
                 i = 1
                 while i != len(parameters):
+                    # if this is a reduction function, remember which general variables it used in reduction step
                     if parameters[i] in local_var_list or parameters[i] in global_var_list:
                         rfunc_list[parameters[0]].rvar_list.append(parameters[i])
                     i += 1
