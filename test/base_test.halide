@@ -1,28 +1,24 @@
 #include "Halide.h"
-#include <assert.h>
-#include <iostream>
 
-#define RESULT_TYPE int
+#define RESULT_TYPE float
 using namespace Halide;
 
 int main(int argc, char **argv) {
     int W=32;
     int H=32;
 
-    Var x, y;
-    Func f(x,y), g(x,y);
+    Image<float> im(W, H);
+    RDom r(0, W, 1, H-1);
+    Func g(x,y,r);
 
-    f(x, y) = max(x, y);
-    g(x, y) = min(x, y);
+    for(int i=0; i<W; i++)
+      for(int j=0; j<H; j++)
+        im(i,j) = i*W+j;
 
-    Image<int> imf = f.realize(W, H);
-    Image<int> img = g.realize(W, H);
+    g(x, y) = 0;
+    g(r.x, r.y) = im(r.x,r.y-1)+im(r.x,r.y)+im(r.x,r.y+1);
 
-    for(int i=0; i<32; i++) {
-      for(int j=0; j<32; j++) {
-        assert(imf.base[i*32+j] == max(i, j));
-      }
-    }
+    Image<float> img = g.realize(W, H);
 
     return 0;
 }

@@ -9,10 +9,10 @@ local_var_list = {}
 local_rdom_list = {}
 global_rdom_list = {}
 
-func_list = {}
-rfunc_list = {}
-func_def_line = {}
-rfunc_def_line = {}
+func_list = {} # map func name to Func
+rfunc_list = {} # map func name to Func
+func_def_line = {} # map line number to func name
+rfunc_def_line = {} # map line number to rfunc name
 
 ifile = []
 
@@ -28,6 +28,9 @@ class Func:
         self.rvar_list = [] # regular variables used in reduction step
         self.exp = ''
 
+    def __eq__(self, other):
+        return self.var_list == other.var_list and self.var_offset == other.var_offset
+
 class RFunc:
     def __init__(self):
         self.var_list = []
@@ -37,15 +40,47 @@ class RDom:
     def __init__(self):
         self.dimensions = []
 
+def loop_coalesce():
+    func_lines = []
+    for line1 in func_def_line:
+        func_lines.append(line1)
+        for line2 in func_def_line:
+            if line1 == line2 or line2 in func_lines:
+                continue
+
+            # check if there is a reduction in between
+            func1 = func_def_line[line1]
+            func2 = func_def_line[line2]
+            # check if any of the function has been removed already
+            if ifile[line1] == 'REMOVED' or ifile[line2] == 'REMOVED':
+                break
+
+            rf_inbetween = False
+
+            for rf in rfunc_def_line:
+                if (rfunc_def_line[rf] < line1 and rfunc_def_line[rf] > line2) or (rfunc_def_line[rf] < line2 and rfunc_def_line[rf] > line1):
+                    rf_inbetween = True
+                    break
+
+            if not rf_inbetween and func_list[func1] == func_list[func2]:
+                if line1 > line2:
+                    ifile[line1] = ifile[line2] + ifile[line1]
+                    ifile[line2] = 'REMOVED'
+                    return True
+                else:
+                    ifile[line2] = ifile[line1] + ifile[line2]
+                    ifile[line1] = 'REMOVED'
+                    return True
+    return False
+
 def generate_code():
     ln = 0
     space = '    '
 
     # Loop Coalescing
-    #for func1 in func_list:
-    #    for func2 in func_list:
-    #        if func1 == func2:
-    #            continue
+    working = True
+    while working:
+        working = loop_coalesce()
 
 
     # Code Generation
@@ -63,7 +98,7 @@ def generate_code():
             # generate outer loops if there is any regular variabels
             for arg in rfunc_list[func_name].rvar_list:
                 if arg in local_var_list or arg in global_var_list:
-                    sys.stdout.write(space+'for(unsigned int '+arg)
+                    sys.stdout.write(space+'for(int '+arg)
                     if arg in local_var_list:
                         sys.stdout.write('='+local_var_list[arg].lower+'; ')
                         sys.stdout.write(arg+'<'+local_var_list[arg].upper+'; ')
@@ -154,13 +189,17 @@ def generate_code():
                     sys.stdout.write(global_var_list[arg].upper)
                     sys.stdout.write(';\n')
 
+            if ifile[ln] == 'REMOVED':
+                ln += 1
+                continue
+
             # generate code for "for" loop
             ch = ord('x')
             i = 0
             # for(arg=0; arg<upper; arg++)
             for arg in func_list[func_name].var_list:
                 if arg in local_var_list or arg in global_var_list:
-                    sys.stdout.write(space+'for(unsigned int '+arg)
+                    sys.stdout.write(space+'for(int '+arg)
                     if func_list[func_name].var_offset[i] == '':
                         if arg in local_var_list:
                             sys.stdout.write('='+local_var_list[arg].lower+'; ')
