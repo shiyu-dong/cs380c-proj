@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
     g(x, y) = 0;
     g(r.x, r.y) = im(r.x,r.y-1)+im(r.x,r.y)+im(r.x,r.y+1);
 
-    g.tile(x, xi, 4, y, yi, 8);
+    g.tile(x, xTile, 4, y, yTile, 8);
 
     Image<float> img = g.realize(W, H);
 

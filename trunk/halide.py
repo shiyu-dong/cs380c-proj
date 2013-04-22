@@ -27,8 +27,8 @@ class Func:
         self.var_list = []
         self.var_offset = []
         self.rvar_list = [] # regular variables used in reduction step
-        self.declar_var_list = [] # original variable list, will be used only if the function is optimized and new var introduced
-        self.declar_var_size = {}
+        self.var = {}
+        self.it_var_list = []
         self.exp = ''
 
     def __eq__(self, other):
@@ -163,19 +163,19 @@ def generate_code():
             # f.base = new RESULT_TYPE[SIZE*SIZE]
             sys.stdout.write(space + func_name + '.base = new RESULT_TYPE[')
             count = 0;
-            for arg in func_list[func_name].declar_var_list:
+            for arg in func_list[func_name].var_list:
                 count += 1
                 if arg in local_var_list:
                     sys.stdout.write(local_var_list[arg].upper)
                 elif arg in global_var_list:
                     sys.stdout.write(global_var_list[arg].upper)
-                if count != len(func_list[func_name].declar_var_list) and not func_list[func_name].declar_var_list[count] in local_rdom_list and not func_list[func_name].declar_var_list[count] in global_rdom_list:
+                if count != len(func_list[func_name].var_list) and not func_list[func_name].var_list[count] in local_rdom_list and not func_list[func_name].var_list[count] in global_rdom_list:
                     sys.stdout.write('*')
             sys.stdout.write('];\n')
 
             # f.s0 = SIZE
             sys.stdout.write(space + func_name+'.s0 = ')
-            arg = func_list[func_name].declar_var_list[0]
+            arg = func_list[func_name].var_list[0]
             if arg in local_var_list:
                 sys.stdout.write(local_var_list[arg].upper)
             elif arg in global_var_list:
@@ -183,8 +183,8 @@ def generate_code():
             sys.stdout.write(';\n')
 
             # f.s1 = SIZE
-            if len(func_list[func_name].declar_var_list) > 1:
-                arg = func_list[func_name].declar_var_list[1]
+            if len(func_list[func_name].var_list) > 1:
+                arg = func_list[func_name].var_list[1]
                 if arg in local_var_list:
                     sys.stdout.write(space + func_name+'.s1 = ')
                     sys.stdout.write(local_var_list[arg].upper)
@@ -201,8 +201,21 @@ def generate_code():
             # generate code for "for" loop
             i = 0
             # for(arg=0; arg<upper; arg++)
-            for arg in func_list[func_name].var_list:
-                if arg in local_var_list or arg in global_var_list:
+            for arg in func_list[func_name].it_var_list:
+                if arg in func_list[func_name].var:
+                    sys.stdout.write(space+'for(int '+arg)
+                    if func_list[func_name].var_offset[i] == '':
+                        sys.stdout.write('='+func_list[func_name].var[arg].lower+'; ')
+                        sys.stdout.write(arg+'<'+func_list[func_name].var[arg].upper+'; ')
+                        sys.stdout.write(arg+'+='+func_list[func_name].var[arg].step+') {\n')
+                    else:
+                        sys.stdout.write('='+func_list[func_name].var_offset[i]+'; ')
+                        sys.stdout.write(arg+'<'+func_list[func_name].var[arg].upper)
+                        sys.stdout.write('-('+func_list[func_name].var_offset[i]+'); ')
+                        sys.stdout.write(arg+'+='+func_list[func_name].var[arg].step+') {\n')
+                    space += '  '
+
+                elif arg in local_var_list or arg in global_var_list:
                     sys.stdout.write(space+'for(int '+arg)
                     if func_list[func_name].var_offset[i] == '':
                         if arg in local_var_list:
@@ -232,8 +245,8 @@ def generate_code():
 
             # print back brackets
             space = space[:len(space)-2] 
-            for arg in func_list[func_name].var_list:
-                if arg in local_var_list or arg in global_var_list:
+            for arg in func_list[func_name].it_var_list:
+                if arg in local_var_list or arg in global_var_list or arg in func_list[func_name].var:
                     sys.stdout.write(space + '}\n')
                     space = space[:len(space)-2] 
             space += '  '
@@ -251,7 +264,7 @@ def generate_code():
             sys.stdout.write(line)
 
         # delete lines for Var declaraion
-        elif not 'Var' in sline:
+        elif not 'Var' in sline and re.match('\w+\.tile\(', pline) == None:
             sys.stdout.write(line)
         ln += 1
 
@@ -374,10 +387,6 @@ for line in sys.stdin:
         parameters = re.split('\(|,|\)', func_call)
 
         if parameters[0] in func_list:
-            func_name = parameters[0]
-            func_list[func_name].declar_var_list = list(func_list[func_name].var_list) 
-
-        if parameters[0] in func_list:
             if func_list[parameters[0]].exp == '':
                 func_list[parameters[0]].exp = exp
                 func_def_line[len(ifile)-1] = parameters[0]
@@ -409,6 +418,10 @@ for line in sys.stdin:
                 local_var_list[var_name].upper = num
             elif var_name in global_var_list:
                 global_var_list[var_name].upper = num
+
+            for f in func_list:
+                if var_name+'Tile' in func_list[f].var:
+                    func_list[f].var[var_name+'Tile'].upper = num
             i+=1
 
     # Parse optmizations
@@ -416,6 +429,9 @@ for line in sys.stdin:
         this_line = pline.replace(' ','')
         func_name = re.findall('\w+\.tile', this_line)
         func_name = func_name[0][:func_name[0].index('.')]
+
+        for arg in func_list[func_name].var_list:
+            func_list[func_name].it_var_list.append(arg)
 
         args = this_line[this_line.index('(')+1:this_line.index(')')]
         args = re.split(',', args)
@@ -427,22 +443,21 @@ for line in sys.stdin:
             # args[i+2] tile variable step size
 
             # offset changes
-            orig_index = func_list[func_name].var_list.index(args[i])
+            orig_index = func_list[func_name].it_var_list.index(args[i])
             orig_offset = func_list[func_name].var_offset[orig_index]
             func_list[func_name].var_offset[orig_index+1] = ''
 
             # insert tile variable
-            func_list[func_name].var_list.insert(new_index, args[i+1])
+            func_list[func_name].it_var_list.insert(new_index, args[i+1])
             func_list[func_name].var_offset.insert(new_index, orig_offset)
 
-            local_var_list[args[i+1]] = Var()
-            local_var_list[args[i+1]].lower = local_var_list[args[i]].lower
-            local_var_list[args[i+1]].upper = local_var_list[args[i]].upper
-            local_var_list[args[i+1]].step = args[i+2]
+            func_list[func_name].var[args[i+1]] = Var()
+            func_list[func_name].var[args[i+1]].step = args[i+2]
 
-            local_var_list[args[i]].lower = args[i+1] 
-            local_var_list[args[i]].upper = args[i+2]
-            local_var_list[args[i]].step = '1'
+            func_list[func_name].var[args[i]] = Var()
+            func_list[func_name].var[args[i]].lower = args[i+1] 
+            func_list[func_name].var[args[i]].upper = args[i+2]
+            func_list[func_name].var[args[i]].step = '1'
 
             i+=3
             new_index += 1
