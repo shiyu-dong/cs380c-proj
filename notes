@@ -72,6 +72,7 @@ Syntax change:
   loop boundary inference: Func f(x[1], y[k+2]). Use [..] to specify variable offsets
     reduction function does not have offsets. Boundary in those functions enforced by RDom
   each function can be realized only once
+  Tile Variables must be original variable name + "Tile"
 
 TO TEST:
   51 bounds: has two realize
