@@ -446,6 +446,8 @@ for line in sys.stdin:
             for f in func_list:
                 if var_name+'Tile' in func_list[f].var:
                     func_list[f].var[var_name+'Tile'].upper = num
+                elif var_name in func_list[f].var:
+                    func_list[f].var[var_name].upper = num
             i+=1
 
     # Parse optmizations
