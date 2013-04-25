@@ -73,6 +73,11 @@ Syntax change:
     reduction function does not have offsets. Boundary in those functions enforced by RDom
   each function can be realized only once
   Tile Variables must be original variable name + "Tile"
+  not doing parallelization or tiling to RDom yet..
+  for loop parallel to work with loop coalescing, need to specify parallel for the same Var name for loops to be combined
+    g.parallel(yTile);
+    h.parallel(yTile);
+    so that when loops for g and h is combines, the parallel will be correct
 
 TO TEST:
   51 bounds: has two realize
