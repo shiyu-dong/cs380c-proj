@@ -24,9 +24,8 @@ int main(int argc, char **argv) {
 
     u(x,y) = g(x,y)+f(x,y);
 
-    g.tile(x, xTile, 4, y, yTile, 8);
+    g.tile(x, xTile, 4);
     h.tile(x, xTile, 4, y, yTile, 8);
-    g.parallel(yTile);
     u.parallel(y);
 
     Image<float> img = g.realize(W, H);
