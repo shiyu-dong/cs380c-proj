@@ -99,7 +99,6 @@ def generate_code():
             # for(arg=0; arg<upper; arg++)
 
             # generate reduction loop
-            ch = ord('x')
             # generate outer loops if there is any rdom variabels
             for arg in func_list[func_name].var_list:
                 this_list = {}
@@ -110,13 +109,15 @@ def generate_code():
                 else:
                     continue
 
+                ch = ord('x') + len(this_list[arg].dimensions) - 1
+
                 for dim in this_list[arg].dimensions:
                     sys.stdout.write(space+'for('+arg+'.'+chr(ch))
                     sys.stdout.write('=' + dim.lower + '; ')
                     sys.stdout.write(arg+'.'+chr(ch)+'<'+dim.upper+'; ')
                     sys.stdout.write(arg+'.'+chr(ch)+'+='+dim.step+') {\n')
                     space += '  '
-                    ch += 1
+                    ch -= 1
 
             # generate inner loops if there is any regular variabels
             for arg in rfunc_list[func_name].rvar_list:
@@ -162,34 +163,48 @@ def generate_code():
 
             # f.base = new RESULT_TYPE[SIZE*SIZE]
             sys.stdout.write(space + func_name + '.base = new RESULT_TYPE[')
-            count = 0;
+            count = 0
+            no_arg = True
             for arg in func_list[func_name].var_list:
                 count += 1
                 if arg in local_var_list:
                     sys.stdout.write(local_var_list[arg].upper)
+                    no_arg = False
                 elif arg in global_var_list:
                     sys.stdout.write(global_var_list[arg].upper)
-                if count != len(func_list[func_name].var_list) and not func_list[func_name].var_list[count] in local_rdom_list and not func_list[func_name].var_list[count] in global_rdom_list:
+                    no_arg = False
+                if count != len(func_list[func_name].var_list) and not func_list[func_name].var_list[count] in local_rdom_list and not func_list[func_name].var_list[count] in global_rdom_list and not no_arg:
                     sys.stdout.write('*')
             sys.stdout.write('];\n')
 
             # f.s0 = SIZE
             sys.stdout.write(space + func_name+'.s0 = ')
-            arg = func_list[func_name].var_list[0]
-            if arg in local_var_list:
-                sys.stdout.write(local_var_list[arg].upper)
-            elif arg in global_var_list:
-                sys.stdout.write(global_var_list[arg].upper)
-            sys.stdout.write(';\n')
+            i = 0
+            found = False
+            while not found:
+                arg = func_list[func_name].var_list[i]
+                i += 1
+                if arg in local_var_list:
+                    found = True
+                    sys.stdout.write(local_var_list[arg].upper)
+                    sys.stdout.write(';\n')
+                elif arg in global_var_list:
+                    found = True
+                    sys.stdout.write(global_var_list[arg].upper)
+                    sys.stdout.write(';\n')
 
             # f.s1 = SIZE
-            if len(func_list[func_name].var_list) > 1:
-                arg = func_list[func_name].var_list[1]
+            found = False
+            while not found and i < len(func_list[func_name].var_list):
+                arg = func_list[func_name].var_list[i]
+                i += 1
                 if arg in local_var_list:
+                    found = True
                     sys.stdout.write(space + func_name+'.s1 = ')
                     sys.stdout.write(local_var_list[arg].upper)
                     sys.stdout.write(';\n')
                 elif arg in global_var_list:
+                    found = True
                     sys.stdout.write(space + func_name+'.s1 = ')
                     sys.stdout.write(global_var_list[arg].upper)
                     sys.stdout.write(';\n')
@@ -350,7 +365,7 @@ for line in sys.stdin:
                 new_var.upper = srdom[index]
                 index += 1
 
-                new_rdom.dimensions.append(new_var)
+                new_rdom.dimensions.insert(0, new_var)
                 while srdom[index] == '':
                     index += 1
                     if index == len(srdom):
@@ -377,11 +392,11 @@ for line in sys.stdin:
                 if sfunc[index] != '':
                     j = sfunc[index].find('[')
                     if j == -1:
-                        func_list[func_name].var_list.append(sfunc[index])
-                        func_list[func_name].var_offset.append('')
+                        func_list[func_name].var_list.insert(0, sfunc[index])
+                        func_list[func_name].var_offset.insert(0, '')
                     else:
-                        func_list[func_name].var_list.append(sfunc[index][:j])
-                        func_list[func_name].var_offset.append(sfunc[index][j+1:sfunc[index].find(']')])
+                        func_list[func_name].var_list.insert(0, sfunc[index][:j])
+                        func_list[func_name].var_offset.insert(0, sfunc[index][j+1:sfunc[index].find(']')])
                 index += 1
 
     # Func definition
@@ -441,7 +456,6 @@ for line in sys.stdin:
         args = this_line[this_line.index('(')+1:this_line.index(')')]
         args = re.split(',', args)
         i = 0
-        new_index = 0
         while i != len(args):
             # args[i] original variable name
             # args[i+1] tile variable name
@@ -453,8 +467,8 @@ for line in sys.stdin:
             func_list[func_name].var_offset[orig_index] = ''
 
             # insert tile variable
-            func_list[func_name].it_var_list.insert(new_index, args[i+1])
-            func_list[func_name].var_offset.insert(new_index, orig_offset)
+            func_list[func_name].it_var_list.insert(0, args[i+1])
+            func_list[func_name].var_offset.insert(0, orig_offset)
 
             func_list[func_name].var[args[i+1]] = Var()
             func_list[func_name].var[args[i+1]].step = args[i+2]
@@ -465,6 +479,5 @@ for line in sys.stdin:
             func_list[func_name].var[args[i]].step = '1'
 
             i+=3
-            new_index += 1
 
         
