@@ -283,6 +283,11 @@ for line in sys.stdin:
         depth -= 1
         # if reach another function
         if depth == 0:
+            for f in func_list:
+                if len(func_list[f].it_var_list) == 0:
+                    for arg in func_list[f].var_list:
+                        func_list[f].it_var_list.append(arg)
+
             generate_code()
             #for var in local_rdom_list:
             #    print var, local_var_list[var].upper
@@ -445,7 +450,7 @@ for line in sys.stdin:
             # offset changes
             orig_index = func_list[func_name].it_var_list.index(args[i])
             orig_offset = func_list[func_name].var_offset[orig_index]
-            func_list[func_name].var_offset[orig_index+1] = ''
+            func_list[func_name].var_offset[orig_index] = ''
 
             # insert tile variable
             func_list[func_name].it_var_list.insert(new_index, args[i+1])
