@@ -18,14 +18,16 @@ int main(int argc, char **argv) {
     f(x,y) = im(x-1,y)+im(x,y)+im(x+1,y);
 
     g(x,y) = f(x,y)/3;
-    u(x,y) = g(x,y)+f(x,y);
 
     h(x, y) = 0;
     h(r.x, r.y) = im(r.x,r.y-1)+im(r.x,r.y)+im(r.x,r.y+1);
 
+    u(x,y) = g(x,y)+f(x,y);
+
     g.tile(x, xTile, 4, y, yTile, 8);
-    u.tile(x, xTile, 4, y, yTile, 8);
     h.tile(x, xTile, 4, y, yTile, 8);
+    g.parallel(yTile);
+    u.parallel(y);
 
     Image<float> img = g.realize(W, H);
 

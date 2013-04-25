@@ -21,6 +21,7 @@ class Var:
         self.lower = '0'
         self.upper = '0'
         self.step = '1'
+        self.parallel = False
 
 class Func:
     def __init__(self):
@@ -218,6 +219,10 @@ def generate_code():
             # for(arg=0; arg<upper; arg++)
             for arg in func_list[func_name].it_var_list:
                 if arg in func_list[func_name].var:
+
+                    if func_list[func_name].var[arg].parallel == True:
+                        sys.stdout.write(space + '#pragma omp parallel for\n')
+
                     sys.stdout.write(space+'for(int '+arg)
                     if func_list[func_name].var_offset[i] == '':
                         sys.stdout.write('='+func_list[func_name].var[arg].lower+'; ')
@@ -278,8 +283,7 @@ def generate_code():
             [line, n] = re.subn('\(.*?\)', '', line)
             sys.stdout.write(line)
 
-        # delete lines for Var declaraion
-        elif not 'Var' in sline and re.match('\w+\.tile\(', pline) == None:
+        elif not 'Var' in sline and re.match('\w+\.tile\(', pline) == None and re.match('\w+\.parallel\(', pline) == None:
             sys.stdout.write(line)
         ln += 1
 
@@ -450,8 +454,9 @@ for line in sys.stdin:
         func_name = re.findall('\w+\.tile', this_line)
         func_name = func_name[0][:func_name[0].index('.')]
 
-        for arg in func_list[func_name].var_list:
-            func_list[func_name].it_var_list.append(arg)
+        if len(func_list[func_name].it_var_list) == 0:
+            for arg in func_list[func_name].var_list:
+                func_list[func_name].it_var_list.append(arg)
 
         args = this_line[this_line.index('(')+1:this_line.index(')')]
         args = re.split(',', args)
@@ -475,9 +480,30 @@ for line in sys.stdin:
 
             func_list[func_name].var[args[i]] = Var()
             func_list[func_name].var[args[i]].lower = args[i+1] 
-            func_list[func_name].var[args[i]].upper = args[i+2]
+            func_list[func_name].var[args[i]].upper = args[i+1] + '+' + args[i+2]
             func_list[func_name].var[args[i]].step = '1'
 
             i+=3
 
-        
+    if re.match('\w+\.parallel\(', pline) != None:
+        this_line = pline.replace(' ', '')
+        tmp = re.findall('\w+\.parallel\(.*\)', this_line)
+        func_name = tmp[0][:tmp[0].index('.')]
+        arg_name = tmp[0][tmp[0].index('(')+1:tmp[0].index(')')]
+
+        if len(func_list[func_name].it_var_list) == 0:
+            for arg in func_list[func_name].var_list:
+                func_list[func_name].it_var_list.append(arg)
+
+        if arg_name not in func_list[func_name].var:
+            this_list = {}
+            if arg_name in local_var_list:
+                this_list = local_var_list
+            elif arg_name in global_var_list:
+                this_list = global_var_list
+            func_list[func_name].var[arg_name] = Var()
+            func_list[func_name].var[arg_name].lower = this_list[arg_name].lower
+            func_list[func_name].var[arg_name].upper = this_list[arg_name].upper
+            func_list[func_name].var[arg_name].step = this_list[arg_name].step
+
+        func_list[func_name].var[arg_name].parallel = True
