@@ -30,8 +30,8 @@ int main(int argc, char **argv) {
 
     Image<double> im_energy = energy.realize(size,size);
     Image<double> ref_energy(noise);
-        for (int x = 0; x < size; x++) {
     for (int y = 1; y < size; y++) {
+        for (int x = 0; x < size; x++) {
             int xm = max(x-1, 0);
             int xp = min(x+1, size-1);
             double incr = min(ref_energy(xm, y-1), min(ref_energy(x, y-1), ref_energy(xp, y-1)));
