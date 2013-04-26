@@ -5,14 +5,16 @@ using namespace Halide;
 
 int main(int argc, char **argv) {
     Var x;
-    Func f(x);
+    Func f(x), g(x);
 
-    //Uniform<int> k = 3;
     int k = 3;
 
     f(x) = x*k;
-
-    f.parallel(x);
+    g(x) = x+k;
+    f.tile(x, xTile, 4);
+    g.tile(x, xTile, 2);
+    f.parallel(xTile);
+    g.parallel(xTile);
 
     Image<int> im = f.realize(16);
 
@@ -22,7 +24,7 @@ int main(int argc, char **argv) {
             return -1;
         }
     }
-    
+
     printf("Success!\n");
     return 0;
 }

@@ -12,7 +12,11 @@ int main(int argc, char **argv) {
 
 
     //g.chunk(y);
-    //f.parallel(y);
+    g.tile(x, xTile, 2);
+    g.tile(y, yTile, 4);
+    f.tile(x, xTile, 2);
+    f.parallel(y);
+    f.parallel(x);
 
     Image<int> im = f.realize(8, 8);
 
@@ -24,8 +28,8 @@ int main(int argc, char **argv) {
           }
         }
     }
-    
-    printf("Success!");
+
+    printf("Success!\n");
     return 0;
 }
 
