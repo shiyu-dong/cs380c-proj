@@ -34,6 +34,7 @@ class Func:
         self.var = {}
         self.it_var_list = []
         self.exp = ''
+        self.vec = False
 
     def __eq__(self, other):
         return self.var_list == other.var_list and self.var_offset == other.var_offset
@@ -46,6 +47,11 @@ class RFunc:
 class RDom:
     def __init__(self):
         self.dimensions = []
+
+def print_vec(line):
+  [func_call, exp] = re.split('=', line.replace(' ', ''), 1)
+  print '@@'+func_call
+  print '@@'+exp
 
 def loop_coalesce():
     func_lines = []
@@ -286,14 +292,17 @@ def generate_code():
                 i += 1
 
             # print inner most expression
-            sys.stdout.write(space + ifile[ln].lstrip(' ')),
+            if not func_list[func_name].vec:
+              sys.stdout.write(space + ifile[ln].lstrip(' '))
+            else:
+              print_vec(pline)
 
             # print back brackets
             space = space[:len(space)-2] 
             for arg in func_list[func_name].it_var_list:
                 if arg in local_var_list or arg in global_var_list or arg in func_list[func_name].var:
                     sys.stdout.write(space + '}\n')
-                    space = space[:len(space)-2] 
+                    space = space[:len(space)-2]
             space += '  '
             sys.stdout.write('\n')
 
@@ -538,3 +547,9 @@ for line in sys.stdin:
             func_list[func_name].var[arg_name].step = this_list[arg_name].step
 
         func_list[func_name].var[arg_name].parallel = True
+
+    if re.match('\w+\.vectorize', pline) != None:
+        this_line = pline.replace(' ', '')
+        tmp = re.findall('\w+\.vectorize\(.*\)', this_line)
+        func_name = tmp[0][:tmp[0].index('.')]
+        func_list[func_name].vec = True
