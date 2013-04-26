@@ -23,6 +23,9 @@ class Var:
         self.step = '1'
         self.parallel = False
 
+    def __ne__(self, other):
+        return self.lower == other.lower and self.upper == other.upper and self.step == other.step and self.parallel == other.parallel
+
 class Func:
     def __init__(self):
         self.var_list = []
@@ -66,15 +69,37 @@ def loop_coalesce():
                     rf_inbetween = True
                     break
 
-            if not rf_inbetween and func_list[func1] == func_list[func2]:
-                if line1 > line2:
-                    ifile[line1] = ifile[line2] + ifile[line1]
-                    ifile[line2] = 'REMOVED'
-                    return True
-                else:
-                    ifile[line2] = ifile[line1] + ifile[line2]
-                    ifile[line1] = 'REMOVED'
-                    return True
+            if not rf_inbetween and len(func_list[func1].it_var_list) == len(func_list[func2].it_var_list):
+                i = 0
+                merge = True
+                while i < len(func_list[func1].it_var_list):
+                    if func_list[func1].it_var_list[i] != func_list[func2].it_var_list[i]:
+                        merge = False
+                        break
+
+                    arg = func_list[func1].it_var_list[i]
+
+                    if arg not in func_list[func1].var and arg not in func_list[func2].var:
+                        i += 1
+                        continue
+                    if arg in func_list[func1].var and arg not in func_list[func2].var:
+                        merge = False
+                        break
+                    elif not func_list[func1].var[arg] == func_list[func2].var[arg]:
+                        merge = False
+                        break
+
+                    i += 1
+
+                if merge:
+                    if line1 > line2:
+                        ifile[line1] = ifile[line2] + ifile[line1]
+                        ifile[line2] = 'REMOVED'
+                        return True
+                    else:
+                        ifile[line2] = ifile[line1] + ifile[line2]
+                        ifile[line1] = 'REMOVED'
+                        return True
     return False
 
 def generate_code():
@@ -438,6 +463,10 @@ for line in sys.stdin:
         i = 0
         for num in dimensions:
             var_name = func_list[func_name].var_list[i]
+            while var_name in local_rdom_list or var_name in global_rdom_list:
+                i += 1
+                var_name = func_list[func_name].var_list[i]
+
             if var_name in local_var_list:
                 local_var_list[var_name].upper = num
             elif var_name in global_var_list:

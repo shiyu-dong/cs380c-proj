@@ -14,10 +14,6 @@ int main(int argc, char **argv) {
     c(x, y) = a(x, y) * 2;
     d(x, y) = b(x, y) + c(x, y);
 
-    //c.chunk(y);
-    //b.chunk(y);
-    //a.chunk(y);
-
     printf("Realizing function...\n");
 
     Image<int> im = d.realize(32, 32);
