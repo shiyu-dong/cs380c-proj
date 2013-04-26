@@ -27,6 +27,7 @@ int main(int argc, char **argv) {
     g.tile(x, xTile, 4);
     h.tile(x, xTile, 4, y, yTile, 8);
     u.parallel(y);
+    u.vectorize();
 
     Image<float> img = g.realize(W, H);
 
