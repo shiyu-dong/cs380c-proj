@@ -24,7 +24,7 @@ class Var:
         self.parallel = False
 
     def __ne__(self, other):
-        return self.lower == other.lower and self.upper == other.upper and self.step == other.step and self.parallel == other.parallel
+        return self.lower != other.lower or self.upper != other.upper and self.step != other.step and self.parallel != other.parallel
 
 class Func:
     def __init__(self):
@@ -85,7 +85,7 @@ def loop_coalesce():
                     if arg in func_list[func1].var and arg not in func_list[func2].var:
                         merge = False
                         break
-                    elif not func_list[func1].var[arg] == func_list[func2].var[arg]:
+                    elif func_list[func1].var[arg] != func_list[func2].var[arg]:
                         merge = False
                         break
 
