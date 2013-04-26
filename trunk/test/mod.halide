@@ -8,7 +8,7 @@ bool test() {
     Var x;
     Func f(x);
     f(x) = static_cast<T>(x) % 2;
-    f.tile(x, xTile, 4);j
+    f.tile(x, xTile, 4);
     f.parallel(x);
 
     Image<T> im = f.realize(16);

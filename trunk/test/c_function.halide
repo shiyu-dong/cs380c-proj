@@ -22,10 +22,7 @@ int main(int argc, char **argv) {
 
     f(x, y) = my_func(x, static_cast<float>(y));
 
-    f.tile(x, xTile, 8);
-    f.tile(y, yTile, 4);
-    f.parallel(x);
-    f.parallel(y);
+    f.tile(x, xTile, 8, y, yTile, 4);
     printf("Realizing function...\n");
 
     Image<float> imf = f.realize(32, 32);
