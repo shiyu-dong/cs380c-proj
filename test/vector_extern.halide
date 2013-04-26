@@ -5,12 +5,11 @@
 using namespace Halide;
 
 int main(int argc, char **argv) {
-    Var x;//, y;
-    Func f(x);//, g;
+    Var x;
+    Func f(x);
 
     printf("Defining function...\n");
 
-    //f(x) = sqrt(cast<float>(x));
     f(x) = sqrt(static_cast<float>(x));
     
     //f.vectorize(x, 4);

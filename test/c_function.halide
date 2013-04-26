@@ -10,7 +10,7 @@ using namespace Halide;
 int call_counter = 0;
 extern "C" float my_func(int x, float y) {
     call_counter++;
-//    printf("Hi: %d %f\n", x, y);
+    //printf("Hi: %d %f\n", x, y);
     return x*y;
 }
 
@@ -22,6 +22,10 @@ int main(int argc, char **argv) {
 
     f(x, y) = my_func(x, static_cast<float>(y));
 
+    f.tile(x, xTile, 8);
+    f.tile(y, yTile, 4);
+    f.parallel(x);
+    f.parallel(y);
     printf("Realizing function...\n");
 
     Image<float> imf = f.realize(32, 32);

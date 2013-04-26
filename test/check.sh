@@ -14,7 +14,7 @@ for PROGRAM in base_test split_reuse_inner_name_bug parallel \
 do
   echo ${PROGRAM}
   python ../halide.py < ${PROGRAM}.halide > ${PROGRAM}.cpp
-  g++ -I../ ${PROGRAM}.cpp
+  g++ -fopenmp -I../ ${PROGRAM}.cpp
   ./a.out
   echo ""
 done

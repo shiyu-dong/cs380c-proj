@@ -12,7 +12,10 @@ int main(int argc, char **argv) {
     fib(x) = 1; 
     fib(r.x) = fib(r.x-2) + fib(r.x-1);
 
+    fib.parallel(x);
     g(x) = fib(x);
+    g.tile(x, xTile, 4);
+    g.parallel(x);
 
     Image<int> out = g.realize(20);
 

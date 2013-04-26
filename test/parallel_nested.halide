@@ -9,10 +9,14 @@ int main(int argc, char **argv) {
     int k = 3;
 
     f(x, y, z) = x*y+z*k+1;
+   
+    f.tile(x, xTile, 4);
+    f.tile(y, yTile, 4);
+    f.tile(z, zTile, 4);
 
-    //f.parallel(x);
-    //f.parallel(y);
-    //f.parallel(z);
+    f.parallel(x);
+    f.parallel(y);
+    f.parallel(z);
 
     Image<int> im = f.realize(8, 8, 8);
 
