@@ -12,7 +12,7 @@ int main(int argc, char **argv) {
     f(x) = x*k;
     g(x) = x+k;
     f.tile(x, xTile, 4);
-    g.tile(x, xTile, 2);
+    g.tile(x, xTile, 4);
     f.parallel(xTile);
     g.parallel(xTile);
 
