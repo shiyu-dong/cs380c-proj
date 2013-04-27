@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
     h(x, y) = 0;
     h(r.x, r.y) = im(r.x,r.y-1)+im(r.x,r.y)+im(r.x,r.y+1);
 
-    u(x,y) = (g(x,y)+(f((30*x),y)*2));
+    u(x,y) = ((g(x,y)+(f(x,y)*2.5)) + h(x,y));
 
     g.tile(x, xTile, 4);
     h.tile(x, xTile, 4, y, yTile, 8);

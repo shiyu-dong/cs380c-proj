@@ -78,6 +78,10 @@ Syntax change:
     g.parallel(yTile);
     h.parallel(yTile);
     so that when loops for g and h is combines, the parallel will be correct
+  Index to images must all be integer, no casting
+
+TODO:
+  change inner most variable step
 
 TO TEST:
   51 bounds: has two realize

@@ -2,9 +2,11 @@
 #define __HALIDE_H__
 
 #include <stdint.h>
+#include <malloc.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <omp.h>
+#include <immintrin.h>
 
 namespace Halide {
   struct Var {
@@ -26,15 +28,15 @@ namespace Halide {
       }
 
       Image(unsigned int x) : s0(x), s1(1) {
-        base = new T[x];
+        base = (T*)memalign(32, sizeof(T)*x);
       }
 
       Image(unsigned int x, unsigned int y) : s0(x), s1(y) {
-        base = new T[x*y];
+        base = (T*)memalign(32, sizeof(T)*x*y);
       }
 
       Image(unsigned int x, unsigned int y, unsigned int z) : s0(x), s1(y) {
-        base = new T[x*y*z];
+        base = (T*)memalign(32, sizeof(T)*x*y*z);
       }
 
       // operators
@@ -50,19 +52,28 @@ namespace Halide {
       T &operator()(unsigned int a) {
         return base[a];
       }
+      T* getP(unsigned int a) {
+        return base+a;
+      }
 
       T operator()(unsigned int a, unsigned int b) const {
-        return base[a*s0 + b];
+        return base[b*s0 + a];
       }
       T &operator()(unsigned int a, unsigned int b) {
-        return base[a*s0 + b];
+        return base[b*s0 + a];
+      }
+      T* getP(unsigned int a, unsigned int b) {
+        return base+b*s0+a;
       }
 
       T operator()(unsigned int a, unsigned int b, unsigned int c) const {
-        return base[a*s0*s1 + b*s1 + c];
+        return base[c*s0*s1 + b*s1 + a];
       }
       T &operator()(unsigned int a, unsigned int b, unsigned int c) {
-        return base[a*s0*s1 + b*s1 + c];
+        return base[c*s0*s1 + b*s1 + a];
+      }
+      T* getP(unsigned int a, unsigned int b, unsigned int c) {
+        return base + c*s0*s1 + b*s1 + a;
       }
     };
 
