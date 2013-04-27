@@ -8,6 +8,7 @@ global_var_list = {}
 local_var_list = {}
 local_rdom_list = {}
 global_rdom_list = {}
+image_list = []
 
 func_list = {} # map func name to Func
 rfunc_list = {} # map func name to Func
@@ -17,8 +18,19 @@ rfunc_def_line = {} # map line number to rfunc name
 # for vector code generation
 op_num = 0
 pt_num = 0
+result_type = ''
+op_dict = {
+    '+': 'add_',
+    '-': 'sub_',
+    '*': 'mul_',
+    '/': 'div_',
+    '&': 'and_',
+    '|': 'or_',
+    '^': 'xor_',
+}
 
 ifile = []
+space = '    '
 
 class Var:
     def __init__(self):
@@ -53,50 +65,139 @@ class RDom:
         self.dimensions = []
 
 def get_exp(line):
-    global op_num
-    global pt_num
-    number = re.match('[0-9]+', line)
+    global op_num, pt_num, space
+    number = re.match('[0-9\.]+', line)
     var = re.match('\w+', line)
     func = re.match('\w+\(.*?\)', line)
     if number != None:
-        print(str(op_num) + 'num: ' + line[:number.end()])
+        #print(str(op_num) + 'num: ' + line[:number.end()])
+        if result_type == 'float':
+          sys.stdout.write(space + '__m256 op' + str(op_num) + ' = _mm256_set1_ps(' + line[:number.end()] + ');\n')
+        elif result_type == 'double':
+          sys.stdout.write(space + '__m256d op' + str(op_num) + ' = _mm256_set1_pd(' + line[:number.end()] + ');\n')
+        elif '.' not in line[:number.end()] or result_type == 'int':
+          sys.stdout.write(space + '__m256i op' + str(op_num) + ' = _mm256_set1_epi32(' + line[:number.end()] + ');\n')
         op_num += 1
         return line[number.end():]
 
     elif func != None:
+        op_list = []
         func_name = line[:var.end()]
-        print(str(op_num) + 'func: ' + line[:func.end()])
-        op_num += 1
-        line = line[var.end()+1:]
-        while(line[0] != ')'):
-            line = get_exp(line)
-            if line[0] == ',':
-                line = line[1:]
-        return line[1:] 
+        # Halide function:
+        if func_name in func_list or func_name in image_list:
+          # computer pointer
+          sys.stdout.write(space + 'RESULT_TYPE* pt' + str(pt_num) + ' = ')
+          sys.stdout.write(func_name + '.getP(')
+          count = 1
+          i = var.end()+1
+          while count != 0:
+            sys.stdout.write(line[i])
+            if line[i] == '(':
+              count += 1
+            elif line[i] == ')':
+              count -= 1
+            i += 1
+          sys.stdout.write(';\n')
+          # load variable
+          if result_type == 'int':
+            sys.stdout.write(space + '__m256i op' + str(op_num) + ' = _mm256_load_si256(pt' + str(pt_num) + ');\n')
+          elif result_type == 'float':
+            sys.stdout.write(space + '__m256 op' + str(op_num) + ' = _mm256_load_ps(pt' + str(pt_num) + ');\n')
+          elif result_type == 'double':
+            sys.stdout.write(space + '__m256d op' + str(op_num) + ' = _mm256_load_pd(pt' + str(pt_num) + ');\n')
+          pt_num += 1
+          op_num += 1
+          return line[i:]
+# C++ Function:
+# compute function
+# mm256_set
+        #line = line[var.end()+1:]
+        #while(line[0] != ')'):
+        #    line = get_exp(line)
+        #    op_list.append(op_num - 1)
+        #    if line[0] == ',':
+        #        line = line[1:]
+        #print(str(op_num) + 'func: '),
+        #for operand in op_list:
+        #  print str(operand) + ' ',
+        #print ''
+        #op_num += 1
+        #return line[1:]
 
     elif var != None:
-        print(str(op_num) + 'var: ' + line[:var.end()])
+        #print(str(op_num) + 'var: ' + line[:var.end()])
+        var_name = line[:var.end()]
+        if var_name in local_var_list or var_name in global_var_name or result_type == 'int':
+          sys.stdout.write(space + '__m256i op' + str(op_num) + ' = _mm256_set1_epi32(' + var_name + ');\n')
+        elif result_type == 'float':
+          sys.stdout.write(space + '__m256 op' + str(op_num) + ' = _mm256_set1_ps(' + var_name + ');\n')
+        elif result_type == 'double':
+          sys.stdout.write(space + '__m256d op' + str(op_num) + ' = _mm256_set1_pd(' + var_name + ');\n')
         op_num += 1
         return line[var.end():]
 
     elif line[0] == '(':
-        op1 = op_num
         line = get_exp(line[1:])
-        if line == '' or line[0] == ')':
-            return get_exp(line[1:]) 
+        op1 = op_num-1
+
+        if line[0] == ')':
+            line = line[1:]
+            return line
+
         op = line[0]
-        op2 = op_num
         line = get_exp(line[1:])
-        print(op + ' ' + str(op1) + ' ' + str(op2))
-        return line
+        op2 = op_num-1
+
+        #print(str(op_num) + op + ' ' + str(op1) + ' ' + str(op2))
+        op_str = op_dict[op]
+        if result_type == 'int':
+          sys.stdout.write(space + '__m256i op' + str(op_num) + ' = _mm256_')
+          sys.stdout.write(op_str)
+          sys.stdout.write('si256(op' + str(op1) + ', op' + str(op2) + ');\n')
+        elif result_type == 'float':
+          sys.stdout.write(space + '__m256 op' + str(op_num) + ' = _mm256_')
+          sys.stdout.write(op_str)
+          sys.stdout.write('ps(op' + str(op1) + ', op' + str(op2)  + ');\n')
+        elif result_type == 'double':
+          sys.stdout.write(space + '__m256d op' + str(op_num) + ' = _mm256_')
+          sys.stdout.write(op_str)
+          sys.stdout.write('pd(op' + str(op1) + ', op' + str(op2)  + ');\n')
+
+        op_num += 1
+        return line[1:]
 
     return ''
 
 def print_vec(line):
-    op_num = 0
-    pt_num = 0
-    [func_call, exp] = re.split('=', line.replace(' ', ''), 1)
-    get_exp(exp)
+      global op_num, pt_num
+      op_num = 0
+      pt_num = 0
+      [func_call, exp] = re.split('=', line.replace(' ', ''), 1)
+      #print '@@' + exp
+      get_exp(exp)
+
+      # store result
+      image_name = func_call[:func_call.index('(')]
+      sys.stdout.write(space + 'RESULT_TYPE* pt' + str(pt_num) + ' = ')
+      sys.stdout.write(image_name + '.getP(')
+      count = 1
+      i = re.match('\w+', line).end()+1
+      while count != 0:
+        sys.stdout.write(line[i])
+        if line[i] == '(':
+          count += 1
+        elif line[i] == ')':
+          count -= 1
+        i += 1
+      sys.stdout.write(';\n')
+
+      if result_type == 'int':
+        sys.stdout.write(space + '_mm256_store_si256(pt' + str(pt_num) + ', op' + str(op_num-1) + ');\n')
+      elif result_type == 'float':
+        sys.stdout.write(space + '_mm256_store_ps(pt' + str(pt_num) + ', op' + str(op_num-1) + ');\n')
+      elif result_type == 'double':
+        sys.stdout.write(space + '_mm256_store_pd(pt' + str(pt_num) + ',op' + str(op_num-1) + ');\n')
+      pt_num += 1
 
 def loop_coalesce():
     func_lines = []
@@ -155,6 +256,7 @@ def loop_coalesce():
 
 def generate_code():
     ln = 0
+    global space
     space = '    '
 
     # Loop Coalescing
@@ -239,7 +341,8 @@ def generate_code():
             func_name = func_def_line[ln]
 
             # f.base = new RESULT_TYPE[SIZE*SIZE]
-            sys.stdout.write(space + func_name + '.base = new RESULT_TYPE[')
+            #sys.stdout.write(space + func_name + '.base = new RESULT_TYPE[')
+            sys.stdout.write(space + func_name + '.base = (RESULT_TYPE*)memalign(32, sizeof(RESULT_TYPE)*')
             count = 0
             no_arg = True
             for arg in func_list[func_name].var_list:
@@ -252,7 +355,7 @@ def generate_code():
                     no_arg = False
                 if count != len(func_list[func_name].var_list) and not func_list[func_name].var_list[count] in local_rdom_list and not func_list[func_name].var_list[count] in global_rdom_list and not no_arg:
                     sys.stdout.write('*')
-            sys.stdout.write('];\n')
+            sys.stdout.write(');\n')
 
             # f.s0 = SIZE
             sys.stdout.write(space + func_name+'.s0 = ')
@@ -362,7 +465,8 @@ def generate_code():
             [line, n] = re.subn('\(.*?\)', '', line)
             sys.stdout.write(line)
 
-        elif not 'Var' in sline and re.match('\w+\.tile\(', pline) == None and re.match('\w+\.parallel\(', pline) == None:
+        elif not 'Var' in sline and re.match('\w+\.tile\(', pline) == None \
+            and re.match('\w+\.parallel\(', pline) == None and re.match('\w+\.vectorize\(', pline) == None:
             sys.stdout.write(line)
         ln += 1
 
@@ -379,12 +483,23 @@ for line in sys.stdin:
         depth += 1
     if re.match('.*}.*', pline) != None:
         depth -= 1
-        # if reach another function
+        # if reach end of function
         if depth == 0:
             for f in func_list:
                 if len(func_list[f].it_var_list) == 0:
                     for arg in func_list[f].var_list:
                         func_list[f].it_var_list.append(arg)
+                # change inner loop step
+                if func_list[f].vec == True:
+                    arg_name = func_list[f].it_var_list[-1]
+                    if arg_name in func_list[f].var:
+                      func_list[func_name].var[arg_name].step = '32/sizeof(RESULT_TYPE)'
+                    else:
+                      if arg_name in local_var_list:
+                          this_list = local_var_list
+                      elif arg_name in global_var_list:
+                          this_list = global_var_list
+                      this_list[arg_name].step = '32/sizeof(RESULT_TYPE)'
 
             generate_code()
             #for var in local_rdom_list:
@@ -401,9 +516,13 @@ for line in sys.stdin:
             rfunc_list = {}
             rfunc_def_line = {}
             ifile = []
+            op_num = 0
+            pt_num = 0
+            image_list = []
 
     # add Func define
     if '#define RESULT_TYPE' in line:
+        result_type = line[len('#define RESULT_TYPE '):len(line)-1]
         ifile.append('#define Func Image<RESULT_TYPE>\n')
 
     # Vars declaration
@@ -532,6 +651,18 @@ for line in sys.stdin:
                 elif var_name in func_list[f].var:
                     func_list[f].var[var_name].upper = num
             i+=1
+
+    # Image Declaration
+    if re.match('Image', pline) != None:
+        pline = pline.replace(' ', '')
+        pline = pline[pline.index('>')+1:]
+        while len(pline) > 0:
+          im_match = re.match('\w+\(.+?\)[,;]', pline)
+          if im_match == None:
+            break
+
+          image_list.append(pline[:pline.index('(')])
+          pline = pline[im_match.end():]
 
     # Parse optmizations
     if re.match('\w+\.tile\(', pline) != None:

@@ -1,0 +1,24 @@
+#include "Halide.h"
+#define RESULT_TYPE float
+using namespace Halide;
+
+int main(int argc, char **argv) {
+    int W=32;
+    int H=32;
+
+    Var x, y;
+    Image<float> im(W, H);
+    Func f(x,y), g(x,y);
+
+    for(int i=0; i<W; i++)
+      for(int j=0; j<H; j++)
+        im(i,j) = i*W+j;
+
+    f(x,y) = (im(x,y)*3);
+
+    f.vectorize();
+
+    Image<float> img = f.realize(W, H);
+
+    return 0;
+}
