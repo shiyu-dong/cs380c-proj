@@ -14,6 +14,10 @@ rfunc_list = {} # map func name to Func
 func_def_line = {} # map line number to func name
 rfunc_def_line = {} # map line number to rfunc name
 
+# for vector code generation
+op_num = 0
+pt_num = 0
+
 ifile = []
 
 class Var:
@@ -48,10 +52,51 @@ class RDom:
     def __init__(self):
         self.dimensions = []
 
+def get_exp(line):
+    global op_num
+    global pt_num
+    number = re.match('[0-9]+', line)
+    var = re.match('\w+', line)
+    func = re.match('\w+\(.*?\)', line)
+    if number != None:
+        print(str(op_num) + 'num: ' + line[:number.end()])
+        op_num += 1
+        return line[number.end():]
+
+    elif func != None:
+        func_name = line[:var.end()]
+        print(str(op_num) + 'func: ' + line[:func.end()])
+        op_num += 1
+        line = line[var.end()+1:]
+        while(line[0] != ')'):
+            line = get_exp(line)
+            if line[0] == ',':
+                line = line[1:]
+        return line[1:] 
+
+    elif var != None:
+        print(str(op_num) + 'var: ' + line[:var.end()])
+        op_num += 1
+        return line[var.end():]
+
+    elif line[0] == '(':
+        op1 = op_num
+        line = get_exp(line[1:])
+        if line == '' or line[0] == ')':
+            return get_exp(line[1:]) 
+        op = line[0]
+        op2 = op_num
+        line = get_exp(line[1:])
+        print(op + ' ' + str(op1) + ' ' + str(op2))
+        return line
+
+    return ''
+
 def print_vec(line):
-  [func_call, exp] = re.split('=', line.replace(' ', ''), 1)
-  print '@@'+func_call
-  print '@@'+exp
+    op_num = 0
+    pt_num = 0
+    [func_call, exp] = re.split('=', line.replace(' ', ''), 1)
+    get_exp(exp)
 
 def loop_coalesce():
     func_lines = []
