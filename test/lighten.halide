@@ -1,0 +1,19 @@
+#include "Halide.h"
+
+using namespace Halide;
+
+#include <iostream>
+
+int main(int argc, char **argv) {
+
+	Var x,y,c;
+  Func func(x, y, c);
+
+	Image input(8, 3);
+	int amt = 50;
+
+	func(x,y) = min(input(x,y) + amt, 255);
+	Func func = make_lighten(input, amt);
+
+	Image<int> out = func.realize(8, 3);
+}
