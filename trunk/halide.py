@@ -51,6 +51,7 @@ class Func:
         self.it_var_list = []
         self.exp = ''
         self.vec = False
+        self.root = False
 
     def __eq__(self, other):
         return self.var_list == other.var_list and self.var_offset == other.var_offset
@@ -210,9 +211,14 @@ def loop_coalesce():
             # check if there is a reduction in between
             func1 = func_def_line[line1]
             func2 = func_def_line[line2]
+
+            if func_list[func1].root or func_list[func2].root:
+                print 'ROOT'
+                continue
+
             # check if any of the function has been removed already
             if ifile[line1] == 'REMOVED' or ifile[line2] == 'REMOVED':
-                break
+                continue
 
             rf_inbetween = False
 
@@ -466,7 +472,8 @@ def generate_code():
             sys.stdout.write(line)
 
         elif not 'Var' in sline and re.match('\w+\.tile\(', pline) == None \
-            and re.match('\w+\.parallel\(', pline) == None and re.match('\w+\.vectorize\(', pline) == None:
+            and re.match('\w+\.parallel\(', pline) == None and re.match('\w+\.vectorize\(', pline) == None \
+            and re.match('\w+\.root\(', pline) == None:
             sys.stdout.write(line)
         ln += 1
 
@@ -730,3 +737,10 @@ for line in sys.stdin:
         tmp = re.findall('\w+\.vectorize\(.*\)', this_line)
         func_name = tmp[0][:tmp[0].index('.')]
         func_list[func_name].vec = True
+
+    if re.match('\w+\.root', pline) != None:
+        this_line = pline.replace(' ', '')
+        tmp = re.findall('\w+\.root\(.*\)', this_line)
+        func_name = tmp[0][:tmp[0].index('.')]
+        func_list[func_name].root = True
+
