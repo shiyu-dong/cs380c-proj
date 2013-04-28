@@ -493,7 +493,8 @@ for line in sys.stdin:
                 if func_list[f].vec == True:
                     arg_name = func_list[f].it_var_list[-1]
                     if arg_name in func_list[f].var:
-                      func_list[func_name].var[arg_name].step = '32/sizeof(RESULT_TYPE)'
+                      print arg_name
+                      func_list[f].var[arg_name].step = '32/sizeof(RESULT_TYPE)'
                     else:
                       if arg_name in local_var_list:
                           this_list = local_var_list
