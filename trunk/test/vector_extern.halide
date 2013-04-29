@@ -12,7 +12,7 @@ int main(int argc, char **argv) {
 
     f(x) = sqrt(static_cast<float>(x));
     
-    //f.vectorize(x, 4);
+    f.vectorize(x);
     Image<float> im = f.realize(32);
 
     for (int i = 0; i < 32; i++) {
