@@ -38,7 +38,7 @@ bool test(int vec_width) {
 
     f(x, y) = static_cast<B>(input(x, y));
 
-    //f.vectorize(x, vec_width);
+    f.vectorize(x);
 
     Image<B> output = f.realize(W, H);
 
