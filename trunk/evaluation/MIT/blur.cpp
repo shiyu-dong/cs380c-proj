@@ -1,7 +1,7 @@
 #include "halide/Halide.h"
 using namespace Halide;
 
-#define size 8
+#define size 256
 int main(int argc, char **argv) {
   Var x, y, xi, yi;
 
@@ -28,12 +28,13 @@ int main(int argc, char **argv) {
   //output
   Image<double> output = blur.realize(size, size);
 
-  for (int i = 0; i < size; i++) {
-    for (int j = 0; j < size; j++) {
-      printf("%f ", output(i, j));
-    }
-    printf("\n");
-  }
+  //for (int i = 0; i < size; i++) {
+  //  for (int j = 0; j < size; j++) {
+  //    printf("%f ", output(i, j));
+  //  }
+  //  printf("\n");
+  //}
+  printf("Success!\n");
 
   return 0;
 }

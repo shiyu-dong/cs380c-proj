@@ -2,19 +2,6 @@
 using namespace Halide;
 #define size 1024
 
-//int main(int argc, char **argv) {
-//
-//  //output
-//  Image<double> output = blur_y.realize(size, size);
-//  for (int y = 1; y < size; y++) {
-//    for (int x = 0; x < size; x++) {
-//      printf("%f ", output(x, y));
-//    }
-//    printf("\n");
-//  }
-//
-//  return 0;
-//}
 int main(int argc, char** argv){
 
   Var x, y, xi, yi;
@@ -38,12 +25,13 @@ int main(int argc, char** argv){
   blur_y.tile(x, y, xi, yi, 128, 128).vectorize(yi, 8).parallel(y);
 
   Image<double> output = blur_all.realize(size,size);
-  for (int y = 1; y < size; y++) {
-    for (int x = 0; x < size; x++) {
-      printf("%f ", output(x, y));
-    }
-    printf("\n");
-  }
+  //for (int y = 1; y < size; y++) {
+  //  for (int x = 0; x < size; x++) {
+  //    printf("%f ", output(x, y));
+  //  }
+  //  printf("\n");
+  //}
+  printf("Success!\n");
 
   return 0;
 }

@@ -15,5 +15,6 @@ int main(int argc, char **argv) {
   //output
   Image<float> output = avg.realize(8, 8);
 
+  printf("Success!\n");
   return 0;
 }
