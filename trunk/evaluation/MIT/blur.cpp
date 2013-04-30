@@ -5,14 +5,6 @@ using namespace Halide;
 int main(int argc, char **argv) {
   Var x, y, xi, yi;
 
-  //input
-  //Image<float> input(size, size);
-  //for (int i = 0; i < size; i++) {
-  //  for (int j = 0; j < size; j++) {
-  //    input(i,j) = (float)rand() / RAND_MAX;
-  //  }
-  //}
-
   Func input, blur_x, blur;
 
   ////The algorithm
