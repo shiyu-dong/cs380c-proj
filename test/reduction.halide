@@ -1,0 +1,24 @@
+#include "Halide.h"
+#define RESULT_TYPE double
+
+using namespace Halide;
+
+int main(int argc, char **argv) {
+    Var x, y;
+
+    const int size = 32;
+
+    Func clamped(x,y);
+    Func energy(x,y,ry);
+    RDom ry(1, 31);
+
+    clamped(x, y) = x+y;
+    
+    energy(x, y)  = clamped(x, y);
+    //TODO: loop for x needed
+    energy(x, ry.x) = clamped(x, ry.x) + energy(x, ry.x);
+
+    Image<double> im_energy = energy.realize(size,size);
+    printf("Success!\n");
+    return 0;
+}
