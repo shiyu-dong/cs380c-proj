@@ -255,8 +255,9 @@ def loop_coalesce():
                         merge = False
                         break
 
-                    arg = func_list[func1].it_var_list[i]
-
+                    if func_list[func1].var_offset[i] != func_list[func2].var_offset[i]:
+                        merge = False
+                        break
                     if arg not in func_list[func1].var and arg not in func_list[func2].var:
                         i += 1
                         continue
@@ -520,7 +521,6 @@ for line in sys.stdin:
                 if func_list[f].vec == True:
                     arg_name = func_list[f].it_var_list[-1]
                     if arg_name in func_list[f].var:
-                      print arg_name
                       func_list[f].var[arg_name].step = '32/sizeof(RESULT_TYPE)'
                     else:
                       if arg_name in local_var_list:
@@ -705,6 +705,7 @@ for line in sys.stdin:
         args = this_line[this_line.index('(')+1:this_line.index(')')]
         args = re.split(',', args)
         i = 0
+
         while i != len(args):
             # args[i] original variable name
             # args[i+1] tile variable name
@@ -713,6 +714,9 @@ for line in sys.stdin:
             # offset changes
             orig_index = func_list[func_name].it_var_list.index(args[i])
             orig_offset = func_list[func_name].var_offset[orig_index]
+            if orig_offset != '':
+                sys.stderr.write('Error: access in ' + func_name + 'is not aligned\n')
+                quit()
             func_list[func_name].var_offset[orig_index] = ''
 
             # insert tile variable
