@@ -29,6 +29,10 @@ op_dict = {
     '^': 'xor_',
 }
 
+cfunc_list = ['cos', 'sin', 'tan', 'acos', 'asin', 'atan', 'atan2', 'cosh', 'sinh', 'tanh', 'exp',
+        'log', 'log10', 'pow', 'sqrt', 'ceil', 'abs', 'floor',
+        'min', 'max']
+
 ifile = []
 space = '    '
 
@@ -109,22 +113,39 @@ def get_exp(line):
           pt_num += 1
           op_num += 1
           return line[i:]
-# C++ Function:
-# compute function
-# mm256_set
-        #line = line[var.end()+1:]
-        #while(line[0] != ')'):
-        #    line = get_exp(line)
-        #    op_list.append(op_num - 1)
-        #    if line[0] == ',':
-        #        line = line[1:]
-        #print(str(op_num) + 'func: '),
-        #for operand in op_list:
-        #  print str(operand) + ' ',
-        #print ''
-        #op_num += 1
-        #return line[1:]
 
+        # C++ Function:
+        elif func_name in cfunc_list:
+            line = line[var.end()+1:]
+            while(line[0] != ')'):
+                line = get_exp(line)
+                op_list.append(op_num - 1)
+                if line[0] == ',':
+                    line = line[1:]
+
+            if result_type == 'int':
+              sys.stdout.write(space + '__m256i op' + str(op_num) + ' = _mm256_')
+              sys.stdout.write(func_name+'_')
+              sys.stdout.write('si256(')
+            elif result_type == 'float':
+              sys.stdout.write(space + '__m256 op' + str(op_num) + ' = _mm256_')
+              sys.stdout.write(func_name+'_')
+              sys.stdout.write('ps(');
+            elif result_type == 'double':
+              sys.stdout.write(space + '__m256d op' + str(op_num) + ' = _mm256_')
+              sys.stdout.write(func_name+'_')
+              sys.stdout.write('pd(');
+
+            i = 0
+            for operand in op_list:
+              i += 1
+              sys.stdout.write('op' + str(operand))
+              if i != len(op_list):
+                  sys.stdout.write(', ')
+            sys.stdout.write(');\n')
+            op_num += 1
+            return line[1:]
+            
     elif var != None:
         #print(str(op_num) + 'var: ' + line[:var.end()])
         var_name = line[:var.end()]
@@ -213,7 +234,6 @@ def loop_coalesce():
             func2 = func_def_line[line2]
 
             if func_list[func1].root or func_list[func2].root:
-                print 'ROOT'
                 continue
 
             # check if any of the function has been removed already
