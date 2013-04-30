@@ -58,62 +58,16 @@ int main(int argc, char **argv) {
 
     Var _c0, _c1, iv0, gridz, blockidx("blockidx");
 
-    //set schedule type
-    int sched = 0;
-
-    switch(sched) {
-    case 0:
+    // Schedule
     // SIGGRAPH hand-tuned
     // Best schedule for CPU
-    printf("Compiling for CPU\n");
     grid.root().parallel(z);
     blurx.root().parallel(z).vectorize(x, 4);
     blury.root().parallel(z).vectorize(x, 4);
     blurz.root().parallel(z).vectorize(x, 4);
     smoothed.root().parallel(y).vectorize(x, 4);
-    break;
 
-    case 1:
-    // PLDI autotuned - adobe1 - WTF!?
-    iv0 = blurx.arg(3);
-    fprintf(stderr, "iv0: %s\n", iv0.name().c_str());
-    blurx.root().split(iv0,iv0,_c0,8).vectorize(_c0,4).parallel(z);
-    blury.root();
-    blurz.chunk(iv0);
-    grid.root();
-    interpolated.root().parallel(y).vectorize(x,4);
-    smoothed.root().vectorize(x,16).tile(x,y,_c0,_c1,2,8).unroll(_c1,4);
-    break;
-
-
-    default:
-    printf("No schedule given\n");
-    exit(1);
-    break;
-    }
-
-    //std::vector<Arg> args;
-    //args.push_back(r_sigma);
-    //args.push_back(input);
-    //smoothed.compileToFile("bilateral_grid", args);
-
-    // Compared to Sylvain Paris' implementation from his webpage (on
-    // which this is based), for filter params s_sigma 0.1, on a 4 megapixel
-    // input, on a four core x86 (2 socket core2 mac pro)
-    // Filter s_sigma: 2      4       8       16      32
-    // Paris (ms):     5350   1345    472     245     184
-    // Us (ms):        383    142     77      62      65
-    // Speedup:        14     9.5     6.1     3.9     2.8
-
-    // Our schedule and inlining are roughly the same as his, so the
-    // gain is all down to vectorizing and parallelizing. In general
-    // for larger blurs our win shrinks to roughly the number of
-    // cores, as the stages we don't vectorize as well dominate (we
-    // don't vectorize them well because they do gathers and scatters,
-    // which don't work well on x86).  For smaller blurs, our win
-    // grows, because the stages that we vectorize take up all the
-    // time.
-
+    printf("Success!\n");
     return 0;
 }
 
