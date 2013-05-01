@@ -1,12 +1,10 @@
 #include "Halide.h"
 #define RESULT_TYPE double
-
+#define size 2048
 using namespace Halide;
 
 int main(int argc, char **argv) {
     Var x, y;
-
-    const int size = 32;
 
     Image<double> noise(size, size);
     for (int i = 0; i < size; i++) {

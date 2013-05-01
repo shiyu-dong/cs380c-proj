@@ -1,7 +1,7 @@
 #include "halide/Halide.h"
 using namespace Halide;
 
-#define size 256
+#define size 2048
 
 int main() {
 
@@ -23,4 +23,5 @@ int main() {
 //  theta(x, y) = atan(gy(x, y)/gx(x, y));
 
   Image<float> out = G.realize(size, size);
+  printf("Success!\n");
 }

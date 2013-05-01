@@ -1,7 +1,7 @@
 #include "halide/Halide.h"
 using namespace Halide;
 
-#define size 256
+#define size 2048
 int main(int argc, char **argv) {
   Var x, y, xi, yi;
 
