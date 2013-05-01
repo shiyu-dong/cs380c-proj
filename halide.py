@@ -120,6 +120,8 @@ def get_exp(line):
             while(line[0] != ')'):
                 line = get_exp(line)
                 op_list.append(op_num - 1)
+                if line == '':
+                    return ''
                 if line[0] == ',':
                     line = line[1:]
 
@@ -149,7 +151,7 @@ def get_exp(line):
     elif var != None:
         #print(str(op_num) + 'var: ' + line[:var.end()])
         var_name = line[:var.end()]
-        if var_name in local_var_list or var_name in global_var_name or result_type == 'int':
+        if var_name in local_var_list or var_name in global_var_list or result_type == 'int':
           sys.stdout.write(space + '__m256i op' + str(op_num) + ' = _mm256_set1_epi32(' + var_name + ');\n')
         elif result_type == 'float':
           sys.stdout.write(space + '__m256 op' + str(op_num) + ' = _mm256_set1_ps(' + var_name + ');\n')
@@ -283,6 +285,7 @@ def loop_coalesce():
 
 def generate_code():
     ln = 0
+    depth = 0
     global space
     space = '    '
 
@@ -294,7 +297,7 @@ def generate_code():
 
     # Code Generation
     for line in ifile:
-        pline = line.rstrip('\n').lstrip(' ')
+        pline = line.rstrip('\n').lstrip('\t ')
         sline = re.split(' |,|;', pline)
 
         # if this is a reduction step of a function
@@ -369,7 +372,8 @@ def generate_code():
 
             # f.base = new RESULT_TYPE[SIZE*SIZE]
             #sys.stdout.write(space + func_name + '.base = new RESULT_TYPE[')
-            sys.stdout.write(space + func_name + '.base = (RESULT_TYPE*)memalign(32, sizeof(RESULT_TYPE)*')
+            #sys.stdout.write(space + func_name + '.base = (RESULT_TYPE*)memalign(32, sizeof(RESULT_TYPE)*')
+            sys.stdout.write(space + func_name + '.base = (RESULT_TYPE*)calloc(32, sizeof(RESULT_TYPE)*')
             count = 0
             no_arg = True
             for arg in func_list[func_name].var_list:
@@ -386,11 +390,11 @@ def generate_code():
 
             # f.s0 = SIZE
             sys.stdout.write(space + func_name+'.s0 = ')
-            i = 0
+            i = len(func_list[func_name].var_list)-1
             found = False
             while not found:
                 arg = func_list[func_name].var_list[i]
-                i += 1
+                i -= 1
                 if arg in local_var_list:
                     found = True
                     sys.stdout.write(local_var_list[arg].upper)
@@ -404,7 +408,7 @@ def generate_code():
             found = False
             while not found and i < len(func_list[func_name].var_list):
                 arg = func_list[func_name].var_list[i]
-                i += 1
+                i -= 1
                 if arg in local_var_list:
                     found = True
                     sys.stdout.write(space + func_name+'.s1 = ')
@@ -488,7 +492,7 @@ def generate_code():
             sys.stdout.write(line)
 
         # change lines for Func delcaration
-        elif 'Func' in sline:
+        elif 'Func' in sline and depth >= 1:
             [line, n] = re.subn('\(.*?\)', '', line)
             sys.stdout.write(line)
 
@@ -498,12 +502,16 @@ def generate_code():
             sys.stdout.write(line)
         ln += 1
 
+        if len(pline) > 0 and pline[len(pline)-1] == '{':
+            depth += 1
+        elif len(pline) > 0 and pline[len(pline)-1] == '}':
+            depth -= 1
 
 #-----------------  Main  -----------------#
 ## Parse Input
 for line in sys.stdin:
     ifile.append(line)
-    pline = line.rstrip('\n').lstrip(' ')
+    pline = line.rstrip('\n').lstrip(' \t')
     sline = re.split(' |,|;', pline)
 
     # check code block boundary
@@ -661,13 +669,15 @@ for line in sys.stdin:
         dimensions = pline[index+1:len(pline)-2].replace(' ', '')
         dimensions = re.split(',', dimensions)
 
-        i = 0
+        i = len(func_list[func_name].var_list)-1
         for num in dimensions:
             var_name = func_list[func_name].var_list[i]
             while var_name in local_rdom_list or var_name in global_rdom_list:
-                i += 1
+                i -= 1
+                if i < 0:
+                    break
                 var_name = func_list[func_name].var_list[i]
-
+            
             if var_name in local_var_list:
                 local_var_list[var_name].upper = num
             elif var_name in global_var_list:
@@ -678,7 +688,7 @@ for line in sys.stdin:
                     func_list[f].var[var_name+'Tile'].upper = num
                 elif var_name in func_list[f].var:
                     func_list[f].var[var_name].upper = num
-            i+=1
+            i-=1
 
     # Image Declaration
     if re.match('Image', pline) != None:
@@ -714,9 +724,6 @@ for line in sys.stdin:
             # offset changes
             orig_index = func_list[func_name].it_var_list.index(args[i])
             orig_offset = func_list[func_name].var_offset[orig_index]
-            if orig_offset != '':
-                sys.stderr.write('Error: access in ' + func_name + 'is not aligned\n')
-                quit()
             func_list[func_name].var_offset[orig_index] = ''
 
             # insert tile variable

@@ -8,13 +8,13 @@ int main(int argc, char **argv) {
 
     Var x, y;
     Image<float> im(W, H);
-    Func f(x,y), g(x,y);
+    Func f(x[1],y), g(x,y);
 
     f(x,y) = min(min(im(x-1,y), im(x,y)), im(x+1, y));
     g(x,y) = f(x,y)/3;
 
     g.root();
-    f.vectorize();
+    //f.vectorize();
 
     Image<float> img = g.realize(W, H);
 

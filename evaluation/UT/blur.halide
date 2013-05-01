@@ -1,4 +1,4 @@
-#include "halide/Halide.h"
+#include "../../Halide.h"
 using namespace Halide;
 
 #define size 2048

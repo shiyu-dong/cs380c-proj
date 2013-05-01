@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
   //blur_y.tile(x, y, xi, yi, 128, 32);
   blur_y.tile(x, xTile, 128, y, yTile, 32);
 
-  blur_y.vectorize(xi, 16);
+  //blur_y.vectorize(xi, 16);
   //blur_y.vectorize();
 
   //blur_y.parallel(y);
@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
 
   //blur_x.chunk(x);
   //blur_x.vectorize(x, 8);
-  blur_x.vectorize();
+  //blur_x.vectorize();
 
   
 
