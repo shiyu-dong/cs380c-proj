@@ -2,11 +2,11 @@
 #define __HALIDE_H__
 
 #include <stdint.h>
-//#include <malloc.h>
+#include <malloc.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <omp.h>
-//#include <immintrin.h>
+#include <immintrin.h>
 
 namespace Halide {
   struct Var {
@@ -28,18 +28,18 @@ namespace Halide {
       }
 
       Image(unsigned int x) : s0(x), s1(1) {
-        base = (T*)calloc(32, sizeof(T)*x);
-        //base = (T*)memalign(32, sizeof(T)*x);
+        //base = (T*)calloc(32, sizeof(T)*x);
+        base = (T*)memalign(32, sizeof(T)*x);
       }
 
       Image(unsigned int x, unsigned int y) : s0(x), s1(y) {
-        base = (T*)calloc(32, sizeof(T)*x*y);
-        //base = (T*)memalign(32, sizeof(T)*x*y);
+        //base = (T*)calloc(32, sizeof(T)*x*y);
+        base = (T*)memalign(32, sizeof(T)*x*y);
       }
 
       Image(unsigned int x, unsigned int y, unsigned int z) : s0(x), s1(y) {
-        base = (T*)calloc(32, sizeof(T)*x*y*z);
-        //base = (T*)memalign(32, sizeof(T)*x*y*z);
+        //base = (T*)calloc(32, sizeof(T)*x*y*z);
+        base = (T*)memalign(32, sizeof(T)*x*y*z);
       }
 
       // operators
