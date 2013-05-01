@@ -242,14 +242,19 @@ def loop_coalesce():
             if ifile[line1] == 'REMOVED' or ifile[line2] == 'REMOVED':
                 continue
 
-            rf_inbetween = False
-
+            inbetween = False
             for rf in rfunc_def_line:
-                if (rfunc_def_line[rf] < line1 and rfunc_def_line[rf] > line2) or (rfunc_def_line[rf] < line2 and rfunc_def_line[rf] > line1):
-                    rf_inbetween = True
+                if (rf < line1 and rf > line2) or (rf < line2 and rf > line1):
+                    inbetween = True
+                    break
+            for f in func_def_line:
+                if ifile[f] == 'REMOVED':
+                    continue
+                if (f < line1 and f > line2) or (f < line2 and f > line1):
+                    inbetween = True
                     break
 
-            if not rf_inbetween and len(func_list[func1].it_var_list) == len(func_list[func2].it_var_list):
+            if not inbetween and len(func_list[func1].it_var_list) == len(func_list[func2].it_var_list):
                 i = 0
                 merge = True
                 while i < len(func_list[func1].it_var_list):
