@@ -1,7 +1,6 @@
 #include "halide/Halide.h"
 using namespace Halide;
-
-#define size 256
+#define size 2048
 
 int main() {
 
@@ -21,4 +20,5 @@ int main() {
   downy(x, y) = (downx(x, y-2) + 3.0f*downx(x, y-1) + 5.0f*downx(x, y) + 3.0f*downx(x,y+1) + downx(x,y+2)) / 13.0f;
 
   Image<double> out = downy.realize(size, size);
+  printf("Success!\n");
 }

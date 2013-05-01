@@ -1,11 +1,9 @@
 #include "halide/Halide.h"
-
 using namespace Halide;
-
+#define size 2048
 int main(int argc, char **argv) {
     Var x, y;
 
-    const int size = 32;
 
     Image<double> noise(size, size);
     for (int i = 0; i < size; i++) {
