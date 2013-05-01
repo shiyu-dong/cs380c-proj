@@ -15,12 +15,19 @@ int main(int argc, char **argv) {
     g.tile(x, xTile, 4);
     f.parallel(xTile);
     g.parallel(xTile);
+    //f.vectorize();
+    //g.vectorize();
 
-    Image<int> im = f.realize(16);
+    Image<int> im = f.realize(8192);
+    Image<int> im2 = g.realize(8192);
 
-    for (int i = 0; i < 16; i++) {
+    for (int i = 0; i < 8192; i++) {
         if (im(i) != i*3) {
             printf("im(%d) = %d\n", i, im(i));
+            return -1;
+        }
+        if (im2(i) != i+3) {
+            printf("im2(%d) = %d\n", i, im2(i));
             return -1;
         }
     }

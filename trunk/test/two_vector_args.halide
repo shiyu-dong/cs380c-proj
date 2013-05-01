@@ -8,15 +8,13 @@ int main(int argc, char **argv) {
 
     Func f(x,y), g(x,y);
     Var x, y;
-    
-    g(x, y) = x+y;
 
+    g(x, y) = x+y;
     f(x, y) = g(x, x);
-    
-    f.vectorize(x, 4);
+
+    //f.vectorize();
 
     Image<int> out = f.realize(4, 4);
-    
     for (int i=0; i<4; i++) {
       for (int j=0; j<4; j++) {
         if (out(i,j) != i+i) {

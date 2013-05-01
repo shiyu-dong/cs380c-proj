@@ -11,17 +11,15 @@ int main(int argc, char **argv) {
     f(x, y) = g(x-1, y) + g(x+1, y);
 
 
-    //g.chunk(y);
-    g.tile(x, xTile, 2);
-    g.tile(y, yTile, 4);
-    f.tile(x, xTile, 2);
-    f.parallel(y);
-    f.parallel(x);
+    f.root();
+    f.tile(x, xTile, 2, y, yTile, 4);
+    f.parallel(xTile);
+    //f.vectorize();
 
-    Image<int> im = f.realize(8, 8);
+    Image<int> im = f.realize(8192, 8192);
 
-    for (int x = 1; x < 7; x++) {
-        for (int y = 0; y < 8; y++) {
+    for (int x = 1; x < 8191; x++) {
+        for (int y = 0; y < 8192; y++) {
             if (im(x, y) != (x-1)*y + (x+1)*y) {
                 printf("im(%d, %d) = %d\n", x, y, im(x, y));
                 return -1;

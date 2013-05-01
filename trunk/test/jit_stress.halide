@@ -14,7 +14,10 @@ int main(int argc, char **argv) {
 
     f(x) = a(x) + b(x);
 
+    f.root();
+    f.tile(x, xTile, 16);
     f.parallel(x);
+    //f.vectorized();
 
     for (int j = 0; j < 100; j++) {
         timeval t1, t2;

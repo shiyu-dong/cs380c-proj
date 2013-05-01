@@ -37,8 +37,10 @@ bool test(int vec_width) {
     Func f(x,y);
 
     f(x, y) = static_cast<B>(input(x, y));
-
-    f.vectorize(x);
+    f.root();
+    f.tile(x, xTile, 16, y, yTile, 32);
+    //f.parallel(xTile);
+    //f.vectorize(x);
 
     Image<B> output = f.realize(W, H);
 
@@ -90,7 +92,7 @@ int main(int argc, char **argv) {
 
 
     // We only support power-of-two vector widths for now
-    for (int vec_width = 1; vec_width < 32; vec_width*=2) {
+    for (int vec_width = 1; vec_width < 8192; vec_width*=2) {
         //ok = ok && test_all<float>(vec_width);
         //ok = ok && test_all<double>(vec_width);
         ok = ok && test_all<uint8_t>(vec_width);

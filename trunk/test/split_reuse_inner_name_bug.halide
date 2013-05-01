@@ -3,13 +3,17 @@
 using namespace Halide;
 
 int main(int argc, char **argv) {
-    Var x;//, xo;
+    Var x;
 
     Func f(x);
 
     f(x) = 1;
-    //f.root().split(x, xo, x, 2);
-    f.realize(30);
+    f.root().
+    f.tile(x, xTile, 16);
+    f.parallel(xTile);
+    //f.vectorize();
+
+    f.realize(8192);
 
     printf("Success!\n");
     return 0;
