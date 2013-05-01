@@ -8,10 +8,12 @@ bool test() {
     Var x;
     Func f(x);
     f(x) = static_cast<T>(x) % 2;
-    f.tile(x, xTile, 4);
-    f.parallel(x);
+    f.root();
+    f.tile(x, xTile, 16);
+    f.parallel(xTile);
+    //f.vectorize();
 
-    Image<T> im = f.realize(16);
+    Image<T> im = f.realize(8192);
 
     for (int i = 0; i < 16; i++) {
         //printf("%f ", (double)(im(i)));

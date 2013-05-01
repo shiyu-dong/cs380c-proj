@@ -5,30 +5,25 @@ using namespace Halide;
 
 int main(int argc, char **argv) {
     Var x, y;
-    Var xo, xi, yo, yi;
-    
-    Func f(x,y), g(x,y);
+
+    Func f(x,y), g(x[1],y);
 
     printf("Defining function...\n");
 
     f(x, y) = 2.0f;
     g(x, y) = f(x+1, y) + f(x-1, y);
 
-    
-    //if (use_gpu()) {
-    //    g.cudaTile(x, y, 8, 8);
-    //    f.cudaChunk(Var("blockidx"), x, y);
-    //} else {
-    //    g.tile(x, y, xo, yo, xi, yi, 8, 8);
-    //    f.chunk(xo);
-    //}
+    g.root();
+    g.tile(x, xTile, 16, y, yTile, 32);
+    g.parallel(xTile);
+    //g.vectorize();
 
     printf("Realizing function...\n");
 
-    Image<float> im = g.realize(32, 32);
+    Image<float> im = g.realize(2048, 2048);
 
-    for (size_t i = 0; i < 32; i++) {
-        for (size_t j = 0; j < 32; j++) {
+    for (size_t i = 0; i < 2048; i++) {
+        for (size_t j = 0; j < 2048; j++) {
             if (im(i,j) != 4.0) {
                 printf("im[%d, %d] = %f\n", (int)i, (int)j, im(i,j));
                 return -1;

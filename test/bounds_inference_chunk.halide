@@ -12,22 +12,22 @@ double currentTime() {
 
 int main(int argc, char **argv) {
 
-    Func f(x,y), g(x,y), h(x,y);
+    Func f(x[1],y[1]), g(x[1],y[1]), h(x,y);
     Var x, y;
-    
+
     h(x, y) = x + y;
     g(x, y) = (h(x-1, y-1) + h(x+1, y+1))/2;
     f(x, y) = (g(x-1, y-1) + g(x+1, y+1))/2;
 
-    //h.root();
-    //g.chunk(y);
+    h.root();
+    g.tile(x, xTile, 16, y, yTile, 32);
+    g.parallel(xTile);
+    f.parallel(y);
 
-    //f.trace();
+    Image<int> out = f.realize(8192, 8192);
 
-    Image<int> out = f.realize(32, 32);
-
-    for (int y = 0; y < 32; y++) {
-        for (int x = 0; x < 32; x++) {
+    for (int y = 0; y < 8192; y++) {
+        for (int x = 0; x < 8192; x++) {
             if (out(x, y) != x + y) {
                 printf("out(%d, %d) = %d instead of %d\n", x, y, out(x, y), x+y);
                 return -1;

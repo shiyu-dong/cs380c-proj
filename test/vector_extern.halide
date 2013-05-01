@@ -11,11 +11,14 @@ int main(int argc, char **argv) {
     printf("Defining function...\n");
 
     f(x) = sqrt(static_cast<float>(x));
-    
-    //f.vectorize(x);
-    Image<float> im = f.realize(32);
 
-    for (int i = 0; i < 32; i++) {
+    f.root();
+    f.tile(x, xTile, 16);
+    f.parallel(xTile);
+    //f.vectorize(x);
+    Image<float> im = f.realize(8192);
+
+    for (int i = 0; i < 8192; i++) {
         float correct = sqrtf(i);
         if (fabs(im(i) - correct) > 0.001) {
             printf("im(%d) = %f instead of %f\n", i, im(i), correct);

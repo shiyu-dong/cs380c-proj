@@ -14,12 +14,17 @@ int main(int argc, char **argv) {
     c(x, y) = a(x, y) * 2;
     d(x, y) = b(x, y) + c(x, y);
 
+    d.root();
+    d.tile(x, xTile, 16, y, yTile, 32);
+    d.parallel(xTile);
+    //d.vectorize();
+
     printf("Realizing function...\n");
 
-    Image<int> im = d.realize(32, 32);
+    Image<int> im = d.realize(8192, 4096);
 
-    for (size_t y = 0; y < 32; y++) {
-        for (size_t x = 0; x < 32; x++) {
+    for (size_t y = 0; y < 4096; y++) {
+        for (size_t x = 0; x < 8192; x++) {
             int a = x + y;
             int b = a + 1;
             int c = a * 2;

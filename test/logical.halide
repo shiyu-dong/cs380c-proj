@@ -5,26 +5,26 @@ using namespace Halide;
 
 int main(int argc, char **argv) {
 
-    Image<uint8_t> input(64, 64);
+    Image<uint8_t> input(8192, 8192);
 
-    for (int y = 0; y < 64; y++) {
-        for (int x = 0; x < 64; x++) {
-            input(x, y) = y*64 + x;
+    for (int y = 0; y < 8192; y++) {
+        for (int x = 0; x < 8192; x++) {
+            input(x, y) = y*8192 + x;
         }
     }
 
     Func f(x, y);
     Var x, y;
     f(x, y) = select(((input(x, y) > 10) && (input(x, y) < 20)) || ((input(x, y) > 40) && (!(input(x, y) > 50))), 255, 0);
-    f.tile(x, xTile, 4);
-    f.tile(y, yTile, 8);
-    f.parallel(x);
-    f.parallel(y);
+    f.root();
+    f.tile(x, xTile, 8, y, yTile, 8);
+    f.parallel(yTile);
+    //f.vectorize();
 
-    Image<uint8_t> output = f.realize(64, 64);
+    Image<uint8_t> output = f.realize(8192, 8192);
 
-    for (int y = 0; y < 64; y++) {
-        for (int x = 0; x < 64; x++) {
+    for (int y = 0; y < 8192; y++) {
+        for (int x = 0; x < 8192; x++) {
             bool cond = ((input(x, y) > 10) && (input(x, y) < 20)) ||
                 ((input(x, y) > 40) && (!(input(x, y) > 50)));
             uint8_t correct = cond ? 255 : 0;

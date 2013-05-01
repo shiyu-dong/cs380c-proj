@@ -9,16 +9,17 @@ int main(int argc, char **argv) {
     int k = 3;
 
     f(x, y, z) = x*y+z*k+1;
-   
+
+    f.root();
     f.tile(x, xTile, 4, y, yTile, 4, z, zTile, 4);
+    f.parallel(yTile);
+    //f.vectorize();
 
-    f.parallel(zTile);
+    Image<int> im = f.realize(128, 128, 128);
 
-    Image<int> im = f.realize(8, 8, 8);
-
-    for (int x = 0; x < 8; x++) {
-        for (int y = 0; y < 8; y++) {
-            for (int z = 0; z < 8; z++) {
+    for (int x = 0; x < 128; x++) {
+        for (int y = 0; y < 128; y++) {
+            for (int z = 0; z < 128; z++) {
                 if (im(x, y, z) != x*y+z*k+1) {
                     printf("im(%d, %d, %d) = %d\n", x, y, z, im(x, y, z));
                     return -1;

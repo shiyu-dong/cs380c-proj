@@ -7,27 +7,28 @@ int main(int argc, char **argv) {
 
     Func fib(x, r), g(x);
     Var x;
-    RDom r(2, 20);
+    RDom r(2, 8192);
 
     fib(x) = 1; 
     fib(r.x) = fib(r.x-2) + fib(r.x-1);
 
     fib.parallel(x);
     g(x) = fib(x);
-    g.tile(x, xTile, 4);
-    g.parallel(x);
+    g.tile(x, xTile, 16);
+    g.parallel(xTile);
+    //g.vectorize();
 
-    Image<int> out = g.realize(20);
+    Image<int> out = g.realize(8192);
 
-    int fib_ref[20];
+    int fib_ref[8192];
     fib_ref[0] = fib_ref[1] = 1;
-    for (int i = 2; i < 20; i++) {
+    for (int i = 2; i < 8192; i++) {
         fib_ref[i] = fib_ref[i-1] + fib_ref[i-2];
         if (fib_ref[i] != out(i)) {
           printf("out(%d) = %d instead of %d\n", i, out(i), fib_ref[i]);
           return -1;
         }
-    }    
+    }
 
     printf("Success!\n");
 
