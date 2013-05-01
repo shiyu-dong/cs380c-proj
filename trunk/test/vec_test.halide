@@ -1,4 +1,5 @@
 #include "Halide.h"
+#include <math.h>
 #define RESULT_TYPE float
 using namespace Halide;
 
@@ -14,15 +15,23 @@ int main(int argc, char **argv) {
       for(int j=0; j<H; j++)
         im(i,j) = i*W+j;
 
-    f(x,y) = (im(x,y)*3);
+    f(x,y) = sqrt((im(x,y) + (im(x,y)*3)));
 
     
     f.root();
     f.tile(x, xTile, 16, y, yTile, 32);
-    f.parallel(xTile);
-    //f.vectorize();
+    f.parallel(yTile);
+    f.vectorize();
 
     Image<float> img = f.realize(W, H);
+
+    for(int i=0; i<W; i++) {
+      for (int j=0; j<H; j++) {
+        float ans = sqrt((i*W+j)*4);
+        if (abs(img(i, j) - sqrt((i*W+j)*4)) > 0.0005)
+          printf("%u %u %f %f not correct\n", i, j, img(i, j), ans);
+      }
+    }
     printf("Success!\n");
 
     return 0;
