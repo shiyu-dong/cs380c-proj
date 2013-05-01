@@ -177,7 +177,7 @@ def get_exp(line):
         if result_type == 'int':
           sys.stdout.write(space + '__m256i op' + str(op_num) + ' = _mm256_')
           sys.stdout.write(op_str)
-          sys.stdout.write('si256(op' + str(op1) + ', op' + str(op2) + ');\n')
+          sys.stdout.write('epi32(op' + str(op1) + ', op' + str(op2) + ');\n')
         elif result_type == 'float':
           sys.stdout.write(space + '__m256 op' + str(op_num) + ' = _mm256_')
           sys.stdout.write(op_str)
@@ -196,32 +196,39 @@ def print_vec(line):
       global op_num, pt_num
       op_num = 0
       pt_num = 0
-      [func_call, exp] = re.split('=', line.replace(' ', ''), 1)
-      #print '@@' + exp
-      get_exp(exp)
+      #[func_call, exp] = re.split('=', line.replace(' ', ''), 1)
+      vec_call = re.split('=|\n', line.replace(' ', ''))
 
-      # store result
-      image_name = func_call[:func_call.index('(')]
-      sys.stdout.write(space + 'RESULT_TYPE* pt' + str(pt_num) + ' = ')
-      sys.stdout.write(image_name + '.getP(')
-      count = 1
-      i = re.match('\w+', line).end()+1
-      while count != 0:
-        sys.stdout.write(line[i])
-        if line[i] == '(':
-          count += 1
-        elif line[i] == ')':
-          count -= 1
-        i += 1
-      sys.stdout.write(';\n')
+      ite = 0
+      while ite < len(vec_call):
+        func_call = vec_call[ite]
+        exp = vec_call[ite+1]
+        get_exp(exp)
 
-      if result_type == 'int':
-        sys.stdout.write(space + '_mm256_store_si256(pt' + str(pt_num) + ', op' + str(op_num-1) + ');\n')
-      elif result_type == 'float':
-        sys.stdout.write(space + '_mm256_store_ps(pt' + str(pt_num) + ', op' + str(op_num-1) + ');\n')
-      elif result_type == 'double':
-        sys.stdout.write(space + '_mm256_store_pd(pt' + str(pt_num) + ',op' + str(op_num-1) + ');\n')
-      pt_num += 1
+        # store result
+        image_name = func_call[:func_call.index('(')]
+        sys.stdout.write(space + 'RESULT_TYPE* pt' + str(pt_num) + ' = ')
+        sys.stdout.write(image_name + '.getP(')
+        count = 1
+        i = re.match('\w+', line).end()+1
+        while count != 0:
+          sys.stdout.write(line[i])
+          if line[i] == '(':
+            count += 1
+          elif line[i] == ')':
+            count -= 1
+          i += 1
+        sys.stdout.write(';\n')
+
+        if result_type == 'int':
+          sys.stdout.write(space + '_mm256_store_si256(pt' + str(pt_num) + ', op' + str(op_num-1) + ');\n')
+        elif result_type == 'float':
+          sys.stdout.write(space + '_mm256_store_ps(pt' + str(pt_num) + ', op' + str(op_num-1) + ');\n')
+        elif result_type == 'double':
+          sys.stdout.write(space + '_mm256_store_pd(pt' + str(pt_num) + ',op' + str(op_num-1) + ');\n')
+        pt_num += 1
+
+        ite += 2
 
 def loop_coalesce():
     func_lines = []
@@ -377,8 +384,8 @@ def generate_code():
 
             # f.base = new RESULT_TYPE[SIZE*SIZE]
             #sys.stdout.write(space + func_name + '.base = new RESULT_TYPE[')
-            #sys.stdout.write(space + func_name + '.base = (RESULT_TYPE*)memalign(32, sizeof(RESULT_TYPE)*')
-            sys.stdout.write(space + func_name + '.base = (RESULT_TYPE*)calloc(32, sizeof(RESULT_TYPE)*')
+            sys.stdout.write(space + func_name + '.base = (RESULT_TYPE*)memalign(32, sizeof(RESULT_TYPE)*')
+            #sys.stdout.write(space + func_name + '.base = (RESULT_TYPE*)calloc(32, sizeof(RESULT_TYPE)*')
             count = 0
             no_arg = True
             for arg in func_list[func_name].var_list:
