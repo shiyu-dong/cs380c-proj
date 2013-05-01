@@ -12,7 +12,8 @@ for PROGRAM in base1 base2 base_test split_reuse_inner_name_bug parallel vector_
 do
   echo ${PROGRAM}
   python ../halide.py < ${PROGRAM}.halide > ${PROGRAM}.cpp
-  g++ -fopenmp -mavx -mno-align-double -I../ ${PROGRAM}.cpp
+  #g++ -fopenmp -mavx -mno-align-double -I../ ${PROGRAM}.cpp
+  g++ -fopenmp -mno-align-double -I../ ${PROGRAM}.cpp
   ./a.out
   echo ""
 done
