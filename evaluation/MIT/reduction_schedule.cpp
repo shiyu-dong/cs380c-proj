@@ -1,9 +1,12 @@
+#include <sys/time.h>
 #include "halide/Halide.h"
 using namespace Halide;
-#define size 2048
+
+#define size 8192
 int main(int argc, char **argv) {
     Var x, y;
-
+    struct timeval start;
+    struct timeval end;
 
     Image<double> noise(size, size);
     for (int i = 0; i < size; i++) {
@@ -11,6 +14,8 @@ int main(int argc, char **argv) {
             noise(j,i) = (double)rand() / RAND_MAX;
         }
     }
+
+    gettimeofday(&start, NULL);
 
     // Define a seam carving-esque energy
     // The meaning of this depends on the interleaving of the x and y 
@@ -26,7 +31,11 @@ int main(int argc, char **argv) {
     energy(x, ry) = clamped(x, ry) + min(min(energy(xm, ry-1), energy(x, ry-1)), energy(xp, ry-1));
 
     Image<double> im_energy = energy.realize(size,size);
+
+    gettimeofday(&end, NULL);
+
     Image<double> ref_energy(noise);
+
     for (int y = 1; y < size; y++) {
         for (int x = 0; x < size; x++) {
             int xm = std::max(x-1, 0);
@@ -40,6 +49,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    printf("Success!\n");
+    printf("time: %ld\n", (end.tv_sec - start.tv_sec)*1000000 + (end.tv_usec-start.tv_usec));
+    printf("Done!\n");
     return 0;
 }

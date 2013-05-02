@@ -1,7 +1,7 @@
 ./clean.sh
 for PROGRAM in base1 base2 base_test c_function chunk_sharing fibonacci gpu_large_alloc jit_stress \
   logical mod parallel parallel_alloc parallel_nested reduction split_reuse_inner_name_bug vec_test \
-  vector_cast vector_extern
+  vector_extern
 
 #use Func as Expr rather than image processing: bounds_inference bounds_inference_chunk chunk side_effects split_store_compute vector_bounds_inference
 #TODO:

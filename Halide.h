@@ -2,23 +2,23 @@
 #define __HALIDE_H__
 
 #include <stdint.h>
-#include <malloc.h>
+//#include <malloc.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <omp.h>
-#include <immintrin.h>
+//#include <immintrin.h>
 
 namespace Halide {
   struct Var {
-    unsigned int lower;
-    unsigned int upper;
+    int lower;
+    int upper;
   };
 
   template<typename T>
     class Image {
     public:
-      unsigned int s0;
-      unsigned int s1;
+      int s0;
+      int s1;
       T* base;
 
       // constructor
@@ -29,17 +29,20 @@ namespace Halide {
 
       Image(unsigned int x) : s0(x), s1(1) {
         //base = (T*)calloc(32, sizeof(T)*x);
-        base = (T*)memalign(32, sizeof(T)*x);
+        base = new T [sizeof(T)*x];
+        //base = (T*)memalign(32, sizeof(T)*x);
       }
 
       Image(unsigned int x, unsigned int y) : s0(x), s1(y) {
         //base = (T*)calloc(32, sizeof(T)*x*y);
-        base = (T*)memalign(32, sizeof(T)*x*y);
+        base = new T [sizeof(T)*x*y];
+        //base = (T*)memalign(32, sizeof(T)*x*y);
       }
 
       Image(unsigned int x, unsigned int y, unsigned int z) : s0(x), s1(y) {
         //base = (T*)calloc(32, sizeof(T)*x*y*z);
-        base = (T*)memalign(32, sizeof(T)*x*y*z);
+        base = new T [sizeof(T)*x*y*z];
+        //base = (T*)memalign(32, sizeof(T)*x*y*z);
       }
 
       // operators
@@ -49,33 +52,60 @@ namespace Halide {
         s1 = other.s1;
       }
 
-      T operator()(unsigned int a) const {
+      void operator=(Image other) {
+        base = other.base;
+        s0 = other.s0;
+        s1 = other.s1;
+      }
+
+      T operator()(int a) const {
+        if (a < 0) a = 0;
+        else if (a >= s0) a = s0-1;
         return base[a];
       }
-      T &operator()(unsigned int a) {
+      T &operator()(int a) {
+        if (a < 0) a = 0;
+        else if (a >= s0) a = s0-1;
         return base[a];
       }
-      T* getP(unsigned int a) {
+      T* getP(int a) {
+        if (a < 0) a = 0;
+        else if (a >= s0) a = s0-1;
         return base+a;
       }
 
-      T operator()(unsigned int a, unsigned int b) const {
+      T operator()(int a, int b) const {
+        if (a < 0) a = 0;
+        else if (a >= s0) a = s0-1;
+        if (b < 0) b = 0;
+        else if (b >= s1) b = s1-1;
+
         return base[b*s0 + a];
       }
-      T &operator()(unsigned int a, unsigned int b) {
+      T &operator()(int a, int b) {
+        if (a < 0) a = 0;
+        else if (a >= s0) a = s0-1;
+        if (b < 0) b = 0;
+        else if (b >= s1) b = s1-1;
+
         return base[b*s0 + a];
       }
-      T* getP(unsigned int a, unsigned int b) {
+      T* getP(int a, int b) {
+        if (a < 0) a = 0;
+        else if (a >= s0) a = s0-1;
+        if (b < 0) b = 0;
+        else if (b >= s1) b = s1-1;
+
         return base+b*s0+a;
       }
 
-      T operator()(unsigned int a, unsigned int b, unsigned int c) const {
+      T operator()(int a, int b, int c) const {
         return base[c*s0*s1 + b*s1 + a];
       }
-      T &operator()(unsigned int a, unsigned int b, unsigned int c) {
+      T &operator()(int a, int b, int c) {
         return base[c*s0*s1 + b*s1 + a];
       }
-      T* getP(unsigned int a, unsigned int b, unsigned int c) {
+      T* getP(int a, int b, int c) {
         return base + c*s0*s1 + b*s1 + a;
       }
     };

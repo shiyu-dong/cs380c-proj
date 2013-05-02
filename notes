@@ -79,6 +79,7 @@ Syntax change:
     h.parallel(yTile);
     so that when loops for g and h is combines, the parallel will be correct
   Index to images must all be integer, no casting
+  Functions with offsets can't be automatically tiled
 
 TODO:
   change inner most variable step

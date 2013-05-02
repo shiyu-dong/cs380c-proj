@@ -383,8 +383,8 @@ def generate_code():
             func_name = func_def_line[ln]
 
             # f.base = new RESULT_TYPE[SIZE*SIZE]
-            #sys.stdout.write(space + func_name + '.base = new RESULT_TYPE[')
-            sys.stdout.write(space + func_name + '.base = (RESULT_TYPE*)memalign(32, sizeof(RESULT_TYPE)*')
+            sys.stdout.write(space + func_name + '.base = new RESULT_TYPE[')
+            #sys.stdout.write(space + func_name + '.base = (RESULT_TYPE*)memalign(32, sizeof(RESULT_TYPE)*')
             #sys.stdout.write(space + func_name + '.base = (RESULT_TYPE*)calloc(32, sizeof(RESULT_TYPE)*')
             count = 0
             no_arg = True
@@ -398,7 +398,8 @@ def generate_code():
                     no_arg = False
                 if count != len(func_list[func_name].var_list) and not func_list[func_name].var_list[count] in local_rdom_list and not func_list[func_name].var_list[count] in global_rdom_list and not no_arg:
                     sys.stdout.write('*')
-            sys.stdout.write(');\n')
+            #sys.stdout.write(');\n')
+            sys.stdout.write('];\n')
 
             # f.s0 = SIZE
             sys.stdout.write(space + func_name+'.s0 = ')
