@@ -3,8 +3,8 @@
 using namespace Halide;
 
 int main(int argc, char **argv) {
-    int W=8192;
-    int H=8192;
+    int W=4096;
+    int H=4096;
 
     Var x, y;
     Image<float> im(W, H);
@@ -14,8 +14,8 @@ int main(int argc, char **argv) {
     g(x,y) = f(x,y)/3;
 
     f.root();
-    f.tile(x, xTile, 16, y, yTile, 32);
-    f.parallel(xTile);
+    //f.tile(x, xTile, 16, y, yTile, 32);
+    f.parallel(y);
     //f.vectorize();
 
     Image<float> img = g.realize(W, H);
