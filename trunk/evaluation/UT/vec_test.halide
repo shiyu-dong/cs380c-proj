@@ -1,0 +1,61 @@
+#include <sys/time.h>
+#include "../../Halide.h"
+#include <math.h>
+#define RESULT_TYPE float
+using namespace Halide;
+
+int main(int argc, char **argv) {
+    int W=128;
+    int H=128;
+    int W=8192;
+    int H=8192;
+    struct timeval start;
+    struct timeval end;
+
+    Var x, y;
+    Image<float> im(W, H);
+    Func f(x,y), g(x,y), h(x,y);
+
+    for(int i=0; i<W; i++)
+      for(int j=0; j<H; j++)
+        im(i,j) = i*W+j;
+
+    gettimeofday(&start, NULL);
+
+    f(x,y) = (im(x,y) / (im(x,y)*3));
+    g(x,y) = (im(x,y) + (f(x,y)/2.5));
+    h(x,y) = min(f(x,y), (g(x,y)+(im(x,y)*2.5)));
+
+
+    f.root();
+    f.tile(x, xTile, 16, y, yTile, 32);
+    f.parallel(yTile);
+    f.vectorize();
+    g.root();
+    g.tile(x, xTile, 16, y, yTile, 32);
+    g.parallel(yTile);
+    g.vectorize();
+    h.root();
+    h.tile(x, xTile, 16, y, yTile, 32);
+    h.parallel(yTile);
+    h.vectorize();
+
+    Image<float> img = f.realize(W, H);
+
+    gettimeofday(&end, NULL);
+    printf("time: %ld\n", (end.tv_sec - start.tv_sec)*1000000 + (end.tv_usec-start.tv_usec));
+
+    for(int i=0; i<W; i++) {
+      for (int j=0; j<H; j++) {
+        float f = 1.0/3;
+        float g = (im(i, j) + f/2.5);
+        float hn = min(1.0/3, g+im(i, j)*2.5);
+
+        if (abs(h(i, j) - hn) > 0.0005)
+          printf("%u %u %f %f not correct\n", i, j, h(i, j), hn);
+      }
+    }
+    printf("Success!\n");
+
+    return 0;
+}
